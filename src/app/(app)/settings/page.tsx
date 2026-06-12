@@ -34,8 +34,7 @@ export default async function SettingsPage() {
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
         <p className="max-w-2xl text-muted-foreground">
-          Manage your profile, theme preferences, and provider placeholders.
-          Provider keys are not collected in Prompt 1.
+          Manage your profile, theme preferences, and provider connections.
         </p>
       </header>
 
@@ -95,13 +94,14 @@ export default async function SettingsPage() {
             </div>
             <CardDescription>
               Connect TokenRouter, OpenRouter, or a custom OpenAI-compatible
-              router. Keys are encrypted server-side.
+              router. Keys are encrypted server-side. Per-provider model
+              discovery and capability detection is available.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button href="/settings/providers" variant="outline">
               <KeyRound className="h-4 w-4" />
-              Manage providers
+              Manage providers and models
               <ArrowRight className="h-4 w-4" />
             </Button>
           </CardContent>

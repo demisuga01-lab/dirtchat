@@ -14,6 +14,7 @@ import {
   XCircle,
   Eye,
   EyeOff,
+  Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -421,6 +422,13 @@ export function ProviderManager() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    href={`/settings/providers/${p.id}/models`}
+                  >
+                    <Cpu className="h-3.5 w-3.5" /> Models
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"

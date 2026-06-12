@@ -9,13 +9,17 @@ Dirtchat is being built as a multi-model AI chat product. It is a
 layer that supports TokenRouter, OpenRouter, OpenAI, Anthropic, and
 self-hosted OpenAI-compatible endpoints.
 
-> **Status:** Prompt 2 of 10. This commit ships:
-> landing-page polish, a real **provider connection manager** (CRUD + test),
-> **AES-256-GCM server-side encryption** for provider API keys, two new
-> Supabase tables (`provider_connections`, `provider_connection_secrets`),
-> and supporting server actions / route handlers. Live chat streaming,
-> model discovery / capability detection, reasoning controls, file
-> uploads, and deployment ship in later prompts.
+> **Status:** Prompt 3 of 10. This commit ships:
+> **model discovery and capability detection** on top of the Prompt 2
+> provider manager. New Supabase tables: `provider_models`,
+> `model_capabilities`, `model_discovery_runs`, and
+> `model_discovery_events`. Server-only discovery probes
+> (`GET /models` for OpenAI / OpenRouter, with a tiny chat-completions
+> fallback for full-endpoint providers like TokenRouter), conservative
+> capability inference with nullable booleans, manual model addition,
+> per-provider default model selection, and a polished model catalog UI
+> at `/settings/providers/[id]/models`. Real chat streaming, file
+> uploads, reasoning controls, and deployment ship in later prompts.
 
 ## Stack
 
@@ -158,6 +162,7 @@ Then open:
 - `http://localhost:3000/chat` — protected chat placeholder
 - `http://localhost:3000/settings` — protected settings
 - `http://localhost:3000/settings/providers` — provider manager
+- `http://localhost:3000/settings/providers/[id]/models` — model catalog
 
 ## Scripts
 
@@ -191,6 +196,42 @@ Then open:
 - **Anthropic-compatible:** the form accepts the URL, but the test
   endpoint returns "test support ships in a later prompt" so the UI
   never fakes success.
+
+## Model discovery (Prompt 3)
+
+`/settings/providers/[id]/models` is a real, persisted model catalog and
+capability catalog per provider connection.
+
+- **Discovery probes** run server-side and require the saved encrypted
+  API key (decrypted only inside server-only modules).
+- **OpenAI / OpenRouter / generic providers:** a `GET <apiRoot>/models`
+  request is issued. Responses are parsed into three known shapes:
+  OpenRouter rich metadata, OpenAI list, or generic `data|models` array.
+  Metadata is capped (500 models per run by default) and stripped of any
+  secret-shaped keys.
+- **TokenRouter-style full chat-completions URL** (`…/v1/chat/completions`):
+  if `/models` is not available and a `default_model` is configured, a
+  single-token chat-completions ping is performed to synthesize a
+  fallback model row (e.g. `MiniMax-M3`).
+- **Anthropic-compatible:** discovery returns a clear "not implemented"
+  message. Manual model add still works.
+- **Capability inference** is conservative: `null` (unknown) is the
+  default for most capabilities; only metadata that explicitly mentions
+  tools, JSON mode, structured outputs, reasoning parameters, etc.
+  produces `true`. Confidence and source are stored on every row.
+- **Manual model add:** provider id, display name, optional context /
+  max-output, and a small set of capability toggles. Manual models are
+  user-owned and clearly marked.
+- **Default model:** a partial unique index ensures only one
+  `is_default_for_provider = true` per `(user_id, provider_connection_id)`,
+  and `provider_connections.default_model` is updated to match.
+- **Storage:** four new tables (`provider_models`, `model_capabilities`,
+  `model_discovery_runs`, `model_discovery_events`) — all with
+  user-owned RLS, all created and verified through Supabase MCP.
+- **Secrets:** decrypted only inside server-only modules for the
+  duration of the probe. The decrypted key is never logged, never
+  returned, never persisted in events. Re-encrypted bytes live only in
+  `provider_connection_secrets` (carried over from Prompt 2).
 
 ## Prompt 1 scope recap
 
