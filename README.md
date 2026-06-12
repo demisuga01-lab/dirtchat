@@ -106,20 +106,56 @@ cp .env.example .env.local
 
 | Variable | Required? | Notes |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes (for live auth) | Project URL from **Project Settings → API**. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes (for live auth) | Publishable key. Safe in the browser. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Required for Prompt 2 | Server-only. Used to bypass RLS for the encrypted secrets table. **Never** expose to the browser. |
-| `PROVIDER_KEY_ENCRYPTION_KEY` | Required for Prompt 2 | Base64-encoded 32-byte AES-256-GCM key. See generation commands below. |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes (for live auth) | Project URL from **Project Settings → API**. For Dirtchat this is `https://dilfbodsntbnewrlluia.supabase.co`. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes (for live auth) | Publishable anon key. Safe in the browser. From Supabase Dashboard → API. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Required for admin operations | Server-only. Used to bypass RLS for legal docs, account events, and provider secrets. **Never** expose to the browser. From Supabase Dashboard → API → service_role. |
+| `PROVIDER_KEY_ENCRYPTION_KEY` | Required for provider key storage | Base64-encoded 32-byte AES-256-GCM key. See generation commands below. |
 
-Generate a 32-byte key with Node.js:
+Generate a 32-byte encryption key:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
-> The app builds and renders without these values, but provider CRUD
-> (and the connection test) will surface a safe configuration error until
-> they are set.
+> **Three-state env detection:** The app shows distinct messages for:
+> - **Missing:** One or both `NEXT_PUBLIC_*` vars are absent.
+> - **Demo:** Placeholder patterns detected (e.g. `DEMO_REPLACE`, `your-supabase`).
+> - **Ready:** Values look real. Sign-in and sign-up forms are enabled.
+
+### 4. Supabase dashboard checklist
+
+In your Supabase project dashboard, verify:
+
+- **Authentication → Providers → Email:** Email provider **enabled**.
+- **Authentication → Email Templates:** If your email template says "magic link", update it to say "one-time code" for consistency.
+- **Authentication → URL Configuration:** Site URL and redirect URLs set to your local dev URL (e.g. `http://localhost:3000`).
+- **All social/OAuth providers disabled** (Google, GitHub, Discord, Apple, etc.).
+- **Anonymous sign-ins disabled**.
+- **Password-based authentication enabled**.
+- **Email OTP enabled.**
+
+### 5. Auth methods
+
+Dirtchat supports two sign-in methods:
+
+| Method | UI label | Supabase API |
+| --- | --- | --- |
+| Email + password | Password | `signInWithPassword` |
+| Email one-time code | Email code | `signInWithOtp` + `verifyOtp` |
+
+**Not supported:** OAuth/SSO, social login (Google, GitHub, Discord, etc.), magic links, anonymous login.
+
+### 6. Legal acceptance
+
+New accounts must accept the active Terms of Service and Privacy Policy during sign-up. Acceptance is recorded in `user_legal_acceptances` and tracked through account events. Existing users who haven't accepted the latest versions are redirected to `/accept-terms` on login.
+
+### 7. Run the dev server
+
+```bash
+npm run dev
+```
+
+Restart the dev server after changing `.env.local`. Ensure you open the exact port printed in the terminal (e.g. `localhost:3000`, `localhost:3002`, etc.).
 
 ### 4. Apply Supabase migrations
 

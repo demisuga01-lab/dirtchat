@@ -6,7 +6,7 @@ import { getSupabaseEnv } from "@/lib/utils";
 import { AuthCard } from "@/components/auth/auth-card";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { ThemeToggle } from "@/components/app/theme-toggle";
-import { SetupNotice } from "@/components/app/setup-notice";
+import { SupabaseConfigNotice } from "@/components/app/setup-notice";
 
 export const metadata = {
   title: "Sign in",
@@ -38,12 +38,7 @@ export default async function SignInPage() {
       </header>
       <main className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="flex w-full max-w-md flex-col gap-4">
-          {!isConfigured ? (
-            <SetupNotice
-              title="Supabase is not configured"
-              description="Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local, then restart the dev server."
-            />
-          ) : null}
+          <SupabaseConfigNotice />
           <Suspense
             fallback={
               <AuthCard title="Sign in" description="Loading…">

@@ -29,6 +29,9 @@ const PLACEHOLDER_TOKENS = [
   "your-supabase-anon-key",
   "your-supabase-service-role-key",
   "base64-encoded-32-byte-key",
+  "DEMO_REPLACE",
+  "PASTE_",
+  "REPLACE_",
 ];
 
 function isPlaceholder(value: string | undefined): boolean {

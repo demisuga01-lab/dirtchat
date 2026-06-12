@@ -22,7 +22,7 @@ export function SignInForm() {
   const [otpSent, setOtpSent] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const { isConfigured } = getSupabaseEnv();
+  const { isConfigured, configState } = getSupabaseEnv();
   const redirectTo = searchParams?.get("next") ?? "/dashboard";
 
   async function onPasswordSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -130,7 +130,9 @@ export function SignInForm() {
     <div className="flex flex-col gap-4">
       {!isConfigured ? (
         <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-          Authentication is not configured. Sign-in is unavailable right now.
+          {configState.status === "missing"
+            ? "Supabase environment is missing. Sign-in is unavailable."
+            : "Supabase uses demo placeholders. Replace them with real keys, then restart the dev server."}
         </div>
       ) : null}
 

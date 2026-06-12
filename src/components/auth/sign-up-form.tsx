@@ -22,21 +22,27 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
   const [displayName, setDisplayName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [info, setInfo] = React.useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = React.useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = React.useState(false);
-  const { isConfigured } = getSupabaseEnv();
+  const { isConfigured, configState } = getSupabaseEnv();
 
   const termsDoc = legalDocs.find((d) => d.document_type === "terms_of_service");
   const privacyDoc = legalDocs.find((d) => d.document_type === "privacy_policy");
-  const canSubmit = acceptedTerms && acceptedPrivacy;
+  const passwordMismatch = password && confirmPassword && password !== confirmPassword;
+  const canSubmit = acceptedTerms && acceptedPrivacy && !passwordMismatch && password.length >= 6;
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isConfigured) {
       setError("Supabase environment is not configured.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
     setLoading(true);
@@ -86,7 +92,9 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
       {!isConfigured ? (
         <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-          Authentication is not configured. Sign-up is unavailable right now.
+          {configState.status === "missing"
+            ? "Supabase environment is missing. Sign-up is unavailable."
+            : "Supabase uses demo placeholders. Replace them with real keys, then restart the dev server."}
         </div>
       ) : null}
       <div className="flex flex-col gap-2">
@@ -130,6 +138,24 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           placeholder="At least 6 characters"
           disabled={!isConfigured || loading}
         />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="confirm-password">Confirm password</Label>
+        <Input
+          id="confirm-password"
+          name="confirmPassword"
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={6}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Re-enter your password"
+          disabled={!isConfigured || loading}
+        />
+        {passwordMismatch ? (
+          <p className="text-xs text-destructive">Passwords do not match.</p>
+        ) : null}
       </div>
 
       {/* Legal acceptance checkboxes */}
@@ -196,9 +222,10 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
       <Button type="submit" disabled={!isConfigured || loading || !canSubmit}>
         {loading ? "Creating account…" : "Create account"}
       </Button>
-      {!canSubmit && isConfigured ? (
+      {(!canSubmit || passwordMismatch) && isConfigured ? (
         <p className="text-xs text-muted-foreground text-center">
-          You must agree to the Terms of Service and Privacy Policy to create an account.
+          You must agree to the Terms of Service and Privacy Policy and enter
+          matching passwords to create an account.
         </p>
       ) : null}
       <p className="text-center text-sm text-muted-foreground">

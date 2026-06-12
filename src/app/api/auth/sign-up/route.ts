@@ -8,6 +8,7 @@ export async function POST(request: Request) {
   let body: {
     email?: string;
     password?: string;
+    confirmPassword?: string;
     displayName?: string;
     acceptedLegalDocumentIds?: string[];
   };
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { email, password, displayName, acceptedLegalDocumentIds } = body;
+  const { email, password, confirmPassword, displayName, acceptedLegalDocumentIds } = body;
 
   if (!email || !password) {
     return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
@@ -25,6 +26,10 @@ export async function POST(request: Request) {
 
   if (password.length < 6) {
     return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+  }
+
+  if (confirmPassword && password !== confirmPassword) {
+    return NextResponse.json({ error: "Passwords do not match" }, { status: 400 });
   }
 
   const supabase = await createClient();

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseEnv } from "@/lib/utils";
 import { AppShell } from "@/components/app/app-shell";
-import { SetupNotice } from "@/components/app/setup-notice";
+import { SupabaseConfigNotice } from "@/components/app/setup-notice";
 import { checkUserNeedsAcceptance } from "@/lib/account/legal-service";
 
 export default async function ProtectedLayout({
@@ -15,10 +15,7 @@ export default async function ProtectedLayout({
   if (!isConfigured) {
     return (
       <div className="mx-auto flex min-h-[100dvh] max-w-2xl flex-col gap-4 px-4 py-12">
-        <SetupNotice
-          title="Supabase is not configured"
-          description="This area is protected. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local, then restart the dev server."
-        />
+        <SupabaseConfigNotice />
         {children}
       </div>
     );

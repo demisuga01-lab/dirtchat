@@ -8,25 +8,74 @@ export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
+// ---------------------------------------------------------------------------
+// Supabase public env detection — three states
+// ---------------------------------------------------------------------------
+
+const DEMO_PATTERNS = [
+  "DEMO_REPLACE",
+  "your-supabase",
+  "your-project-ref",
+  "PASTE_",
+  "REPLACE_",
+];
+
 /**
- * Read a public Supabase env var with a safe fallback to placeholder
- * values. Used so the app can build and render even when env is not
- * configured. Pages can detect the placeholder values and show a
- * clear "Supabase environment not configured" message.
+ * Three-state result for NEXT_PUBLIC_SUPABASE_URL and
+ * NEXT_PUBLIC_SUPABASE_ANON_KEY detection.
+ *
+ * - `missing` – one or both vars are not set at all.
+ * - `demo`    – vars are set but contain obvious placeholder patterns.
+ * - `ready`   – vars look real (or at least don't match known placeholders).
+ */
+export type SupabasePublicConfigState =
+  | { status: "missing"; missing: string[] }
+  | { status: "demo"; demo: string[] }
+  | { status: "ready" };
+
+function looksDemo(value: string): boolean {
+  return DEMO_PATTERNS.some((p) => value.includes(p));
+}
+
+export function getSupabasePublicConfig(): SupabasePublicConfigState {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+
+  const missing: string[] = [];
+  if (!url) missing.push("NEXT_PUBLIC_SUPABASE_URL");
+  if (!anonKey) missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+
+  if (missing.length > 0) return { status: "missing", missing };
+
+  const demo: string[] = [];
+  if (looksDemo(url)) demo.push("NEXT_PUBLIC_SUPABASE_URL");
+  if (looksDemo(anonKey)) demo.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+
+  if (demo.length > 0) return { status: "demo", demo };
+
+  return { status: "ready" };
+}
+
+/**
+ * Legacy helper – returns the same shape as before so existing consumers
+ * that only need `url` / `anonKey` / `isConfigured` continue to work.
+ *
+ * New code should prefer `getSupabasePublicConfig()`.
  */
 export function getSupabaseEnv(): {
   url: string;
   anonKey: string;
   isConfigured: boolean;
+  configState: SupabasePublicConfigState;
 } {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+  const configState = getSupabasePublicConfig();
 
-  const isPlaceholder =
-    !url ||
-    !anonKey ||
-    url.includes("your-project-ref") ||
-    anonKey.includes("your-supabase-anon-key");
-
-  return { url, anonKey, isConfigured: !isPlaceholder };
+  return {
+    url,
+    anonKey,
+    isConfigured: configState.status === "ready",
+    configState,
+  };
 }
