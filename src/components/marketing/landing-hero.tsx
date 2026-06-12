@@ -16,17 +16,16 @@ export function LandingHero() {
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-16 text-center sm:py-24">
         <div className="animate-fade-in-up">
           <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-[-0.02em] text-foreground sm:text-6xl md:text-7xl">
-            One workspace for
+            Your models.
             <br className="hidden sm:block" />
             <span className="text-success">
-              every serious model.
+              One workspace.
             </span>
           </h1>
         </div>
 
         <p className="animate-fade-in-up animate-delay-100 mt-6 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl">
-          Connect your own providers, compare models side by side, and keep
-          every conversation in a private workspace built for focused AI work.
+          Connect your own providers. Compare models side-by-side. Keep your data private.
         </p>
 
         <div className="animate-fade-in-up animate-delay-200 mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -45,25 +44,24 @@ export function LandingHero() {
         </div>
 
         <p className="animate-fade-in animate-delay-300 mt-6 max-w-md text-xs text-muted-foreground">
-          Model routing, saved conversations, and capability-aware
-          workflows&mdash;without locking your work to one provider.
+          Save your threads. Control your routing. Avoid vendor lock-in.
         </p>
 
         <div className="animate-fade-in-up animate-delay-300 mt-12 grid w-full grid-cols-1 items-stretch gap-4 text-left sm:grid-cols-3">
           <HeroStat
             icon={<MessageSquare className="h-4 w-4" />}
             label="Streaming chat"
-            value="Real-time responses across any connected provider"
+            value="Real-time responses. Direct to your API."
           />
           <HeroStat
             icon={<Layers className="h-4 w-4" />}
-            label="Multi-model workspace"
-            value="Switch between models without switching tools"
+            label="Multi-model"
+            value="Switch models instantly in one window."
           />
           <HeroStat
             icon={<Shield className="h-4 w-4" />}
-            label="Private by design"
-            value="Your keys, your providers, your conversations"
+            label="Private"
+            value="Your keys, direct connections."
           />
         </div>
       </div>

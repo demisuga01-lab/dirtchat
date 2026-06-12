@@ -19,12 +19,10 @@ export default function WhyDirtchatPage() {
         {/* Hero */}
         <section className="mx-auto max-w-4xl px-6 py-20 text-center sm:py-28">
           <h1 className="animate-fade-in-up text-4xl font-semibold tracking-tight sm:text-5xl">
-            Stop working around model silos
+            Stop hopping between model silos
           </h1>
           <p className="animate-fade-in-up animate-delay-100 mx-auto mt-4 max-w-2xl text-balance text-lg text-muted-foreground">
-            You use more than one AI model. Your tools should not force you to
-            hop between dashboards, lose context, or confuse who built each
-            model with who routes it.
+            Connect your own keys, keep your history, and route prompts directly without jumping between tabs.
           </p>
         </section>
 
@@ -36,23 +34,10 @@ export default function WhyDirtchatPage() {
             </h2>
             <div className="mt-8 space-y-4">
               <p className="text-muted-foreground leading-relaxed">
-                Serious AI work today often spans multiple models and providers.
-                You might use one model for coding, another for long-form
-                reasoning, and a third for quick research questions. But most AI
-                tools are built around a single provider or model family.
+                AI work today spans multiple providers. You use different models for coding, reasoning, and search. Yet most platforms lock you into their own model family or route your traffic through their proxy.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                The result is fragmentation. Conversations scattered across
-                different dashboards. Prompts copy-pasted between tabs.
-                Subscription plans that overlap or leave gaps. And confusion about
-                which company actually built the model you are using — especially
-                when routers and marketplaces repackage models under their own
-                branding.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                You should not have to rebuild your workflow every time a new
-                model appears, a provider changes pricing, or a router starts
-                labeling models as if it built them.
+                This fragments your work. Conversations scatter across accounts. Prompts get copy-pasted between browser tabs. Subscription fees overlap, and you lose history when you cancel.
               </p>
             </div>
           </div>

@@ -33,11 +33,28 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
   const termsDoc = legalDocs.find((d) => d.document_type === "terms_of_service");
   const privacyDoc = legalDocs.find((d) => d.document_type === "privacy_policy");
   const emailValid = email.includes("@");
-  const passwordLengthValid = password.length >= 6;
+  const passwordLengthValid = password.length >= 8;
   const passwordsMatch = password === confirmPassword;
   const passwordMismatch = password && confirmPassword && !passwordsMatch;
 
   const canSubmit = acceptedTerms && acceptedPrivacy && passwordsMatch && passwordLengthValid && emailValid;
+
+  const disabledReason = React.useMemo(() => {
+    if (!isConfigured) {
+      if (configState.status === "missing") {
+        return `Missing environment variables: ${(configState as { missing: string[] }).missing.join(", ")}`;
+      }
+      return "Replace demo Supabase keys in .env.local, then restart the dev server.";
+    }
+    if (loading) return "Creating account…";
+    if (!email || !emailValid) return "Enter a valid email.";
+    if (!password || !passwordLengthValid) return "Use at least 8 characters.";
+    if (!confirmPassword || !passwordsMatch) return "Passwords do not match.";
+    if (!acceptedTerms && !acceptedPrivacy) return "Accept the Terms and Privacy Policy to continue.";
+    if (!acceptedTerms) return "Accept the Terms to continue.";
+    if (!acceptedPrivacy) return "Accept the Privacy Policy to continue.";
+    return null;
+  }, [isConfigured, configState, loading, email, emailValid, password, passwordLengthValid, confirmPassword, passwordsMatch, acceptedTerms, acceptedPrivacy]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -50,7 +67,7 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
       return;
     }
     if (!passwordLengthValid) {
-      setError("Password must be at least 6 characters.");
+      setError("Password must be at least 8 characters.");
       return;
     }
     if (!passwordsMatch) {
@@ -124,7 +141,7 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           autoComplete="name"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
-          placeholder="What should we call you?"
+          placeholder="Display Name"
           disabled={!isConfigured || loading}
         />
       </div>
@@ -154,7 +171,7 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="At least 6 characters"
+          placeholder="At least 8 characters"
           disabled={!isConfigured || loading}
         />
       </div>
@@ -244,11 +261,18 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           <span className="font-semibold text-muted-foreground block mb-2">Registration checklist:</span>
           <ul className="space-y-1.5 font-medium">
             <ChecklistRequirement checked={emailValid} label="Valid email address" />
-            <ChecklistRequirement checked={passwordLengthValid} label="Password (6+ characters)" />
+            <ChecklistRequirement checked={passwordLengthValid} label="Password (8+ characters)" />
             <ChecklistRequirement checked={passwordsMatch && !!password} label="Passwords match" />
             <ChecklistRequirement checked={acceptedTerms} label="Accept Terms of Service" />
             <ChecklistRequirement checked={acceptedPrivacy} label="Accept Privacy Policy" />
           </ul>
+        </div>
+      )}
+
+      {/* Disabled reason prompt */}
+      {!canSubmit && disabledReason && (
+        <div className="rounded border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-center text-xs text-amber-500 animate-fade-in font-medium">
+          {disabledReason}
         </div>
       )}
 

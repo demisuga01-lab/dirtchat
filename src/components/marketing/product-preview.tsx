@@ -8,14 +8,14 @@ export function ProductPreview() {
       <div className="overflow-hidden rounded-xl border border-border/70 bg-[#070708] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.7)]">
         {/* Title bar */}
         <div className="flex items-center justify-between border-b border-border/50 bg-[#09090b] px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-red-500/20 border border-red-500/30" />
-            <div className="h-3 w-3 rounded-full bg-yellow-500/20 border border-yellow-500/30" />
-            <div className="h-3 w-3 rounded-full bg-green-500/20 border border-green-500/30" />
+          <div className="flex items-center gap-1.5">
+            <div className="h-2.5 w-2.5 rounded-full bg-red-500/15 border border-red-500/25" />
+            <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/15 border border-yellow-500/25" />
+            <div className="h-2.5 w-2.5 rounded-full bg-green-500/15 border border-green-500/25" />
           </div>
-          <span className="text-xs font-mono tracking-tight text-muted-foreground/85">
-            dirtchat_workspace_preview.sh
-          </span>
+          <div className="flex max-w-[240px] w-full items-center justify-center rounded bg-[#18181b] py-0.5 text-[11px] font-mono tracking-tight text-muted-foreground/75">
+            dirtchat.app/chat/t_7f8a29
+          </div>
           <div className="w-12" />
         </div>
 

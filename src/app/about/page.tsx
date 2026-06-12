@@ -19,12 +19,10 @@ export default function AboutPage() {
         {/* Hero */}
         <section className="mx-auto max-w-4xl px-6 py-20 text-center sm:py-28">
           <h1 className="animate-fade-in-up text-4xl font-semibold tracking-tight sm:text-5xl">
-            A private workspace for serious AI work
+            Your models. Your workspace.
           </h1>
           <p className="animate-fade-in-up animate-delay-100 mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            Dirtchat is built for people who work across more than one model.
-            Connect your own providers, compare models by capability, and keep
-            every conversation in one focused, private workspace.
+            Connect your providers, select models by capability, and keep your threads organized.
           </p>
           <div className="animate-fade-in-up animate-delay-200 mt-8">
             <WorkspacePreviewIllustration />
@@ -39,23 +37,14 @@ export default function AboutPage() {
             </h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2">
               <p className="text-muted-foreground leading-relaxed">
-                Dirtchat is a private, model-agnostic AI workspace. You bring
-                your own API keys, connect the providers you trust, and work
-                across models without scattering your conversations across
-                different dashboards.
+                Dirtchat is a private AI workspace. Bring your own API keys to connect the providers you trust. Work across models without scattering conversations.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Every conversation is saved, searchable, and organized by
-                thread. You can switch models mid-workflow, compare outputs
-                side by side, and keep your entire history in one place —
-                independent of any single provider.
+                Every thread is saved and searchable. Switch models mid-conversation, compare outputs, and own your history.
               </p>
             </div>
             <p className="mt-6 text-muted-foreground leading-relaxed">
-              Unlike services that lock you into one model family or route your
-              requests through a shared proxy, Dirtchat puts you in control.
-              Your keys, your providers, your conversations. No hidden routing.
-              No vendor lock-in.
+              We never use shared proxies or route your data through third parties. Your keys, your providers, your workspace.
             </p>
           </div>
         </section>

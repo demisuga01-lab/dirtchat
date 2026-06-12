@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DirtchatLogo } from "@/components/brand/dirtchat-logo";
 
 const productLinks = [
   { href: "/features", label: "Features" },
@@ -22,11 +23,8 @@ export function MarketingFooter() {
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <div className="col-span-2 sm:col-span-1">
-            <Link href="/" className="flex items-center gap-2.5 text-base font-bold tracking-tight">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-                D
-              </div>
-              Dirtchat
+            <Link href="/" className="flex items-center">
+              <DirtchatLogo size="sm" showWordmark />
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
               A private AI workspace for people who work across multiple

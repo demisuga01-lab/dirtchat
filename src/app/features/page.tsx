@@ -19,11 +19,10 @@ export default function FeaturesPage() {
         {/* Hero */}
         <section className="mx-auto max-w-4xl px-6 py-20 text-center sm:py-28">
           <h1 className="animate-fade-in-up text-4xl font-semibold tracking-tight sm:text-5xl">
-            Features for a model-agnostic workspace
+            Workspace Features
           </h1>
           <p className="animate-fade-in-up animate-delay-100 mx-auto mt-4 max-w-2xl text-balance text-lg text-muted-foreground">
-            Every feature is designed around provider choice, conversation
-            ownership, and a calm interface for focused AI work.
+            Built for provider choice, conversation ownership, and focus.
           </p>
           <div className="animate-fade-in-up animate-delay-200 mt-10">
             <WorkspacePreviewIllustration />
@@ -42,16 +41,10 @@ export default function FeaturesPage() {
                   Chat workspace
                 </h2>
                 <p className="mt-4 text-muted-foreground leading-relaxed">
-                  Real-time streaming responses from any connected model. Messages
-                  appear as they are generated, with controls to stop, cancel,
-                  or regenerate. Every thread is saved automatically, so you can
-                  return to any conversation and pick up where you left off.
+                  Real-time streaming responses from any model. Cancel or regenerate instantly. Threads save automatically.
                 </p>
                 <p className="mt-3 text-muted-foreground leading-relaxed">
-                  Switch models mid-conversation to compare outputs or pivot when one
-                  model handles a task better than another. Provider connection
-                  failures are surfaced clearly so you can recover without
-                  losing your thread.
+                  Switch models mid-thread to compare outputs. Clear connection alerts ensure you never lose context.
                 </p>
               </div>
             </div>
@@ -69,15 +62,7 @@ export default function FeaturesPage() {
                 Provider connections
               </h2>
               <p className="mt-4 text-muted-foreground leading-relaxed">
-                Add, update, or remove provider connections at any time. Your API
-                keys are encrypted at rest and never exposed in the interface after
-                saving. Keys are never shared between users, and no shared proxy
-                routes your requests without your knowledge.
-              </p>
-              <p className="mt-3 text-muted-foreground leading-relaxed">
-                You decide which providers power your workspace. Add a new
-                provider, scan for available models, and start using it
-                immediately. Remove a provider when you no longer need it.
+                Add or remove providers instantly. Keys are encrypted at rest, never exposed in the UI, and never routed through shared proxies.
               </p>
             </div>
           </div>
@@ -101,14 +86,7 @@ export default function FeaturesPage() {
                 Model catalog
               </h2>
               <p className="mt-4 text-muted-foreground leading-relaxed">
-                Every provider connection is scanned to discover available models.
-                Browse what is available, see capability tags for each model, and
-                compare options before you commit a conversation to a model.
-              </p>
-              <p className="mt-3 text-muted-foreground leading-relaxed">
-                The catalog separates model owner from access provider, so you know
-                who built each model and through which route you are connecting.
-                No confusing router names presented as model owners.
+                Discover models automatically from your connections. Inspect capabilities, context windows, and providers in one view.
               </p>
             </div>
           </div>
