@@ -93,8 +93,8 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
       {!isConfigured ? (
         <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
           {configState.status === "missing"
-            ? "Supabase environment is missing. Sign-up is unavailable."
-            : "Supabase uses demo placeholders. Replace them with real keys, then restart the dev server."}
+            ? `The following environment variables are not set: ${(configState as { missing: string[] }).missing.join(", ")}. Add them to .env.local and restart the dev server.`
+            : `Demo placeholder keys detected in: ${(configState as { demo: string[] }).demo.join(", ")}. Replace them with real values in .env.local and restart the dev server.`}
         </div>
       ) : null}
       <div className="flex flex-col gap-2">

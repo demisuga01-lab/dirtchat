@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toaster";
 
+const RESEND_COOLDOWN_SECONDS = 60;
+
 type Tab = "password" | "otp";
 
 export function SignInForm() {
@@ -22,6 +24,27 @@ export function SignInForm() {
   const [otpSent, setOtpSent] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = React.useState(0);
+  const cooldownRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Start cooldown timer
+  function startCooldown() {
+    setResendCooldown(RESEND_COOLDOWN_SECONDS);
+    if (cooldownRef.current) clearInterval(cooldownRef.current);
+    cooldownRef.current = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) {
+          if (cooldownRef.current) clearInterval(cooldownRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+
+  React.useEffect(() => {
+    return () => { if (cooldownRef.current) clearInterval(cooldownRef.current); };
+  }, []);
   const { isConfigured, configState } = getSupabaseEnv();
   const redirectTo = searchParams?.get("next") ?? "/dashboard";
 
@@ -81,6 +104,7 @@ export function SignInForm() {
         return;
       }
       setOtpSent(true);
+      startCooldown();
       push({
         title: "Code sent",
         description: "Check your email for a one-time code.",
@@ -131,8 +155,8 @@ export function SignInForm() {
       {!isConfigured ? (
         <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
           {configState.status === "missing"
-            ? "Supabase environment is missing. Sign-in is unavailable."
-            : "Supabase uses demo placeholders. Replace them with real keys, then restart the dev server."}
+            ? `The following environment variables are not set: ${(configState as { missing: string[] }).missing.join(", ")}. Add them to .env.local and restart the dev server.`
+            : `Demo placeholder keys detected in: ${(configState as { demo: string[] }).demo.join(", ")}. Replace them with real values in .env.local and restart the dev server.`}
         </div>
       ) : null}
 
@@ -247,17 +271,31 @@ export function SignInForm() {
           ) : null}
 
           {otpSent ? (
-            <div className="flex gap-2">
-              <Button type="submit" disabled={!isConfigured || loading || otpCode.length < 6} className="flex-1">
-                {loading ? "Verifying…" : "Verify code"}
-              </Button>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                <Button type="submit" disabled={!isConfigured || loading || otpCode.length < 6} className="flex-1">
+                  {loading ? "Verifying…" : "Verify code"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={loading}
+                  onClick={() => { setOtpSent(false); setOtpCode(""); setError(null); setResendCooldown(0); }}
+                >
+                  Change email
+                </Button>
+              </div>
               <Button
                 type="button"
-                variant="outline"
-                disabled={loading}
-                onClick={() => { setOtpSent(false); setOtpCode(""); setError(null); }}
+                variant="ghost"
+                size="sm"
+                disabled={loading || resendCooldown > 0}
+                onClick={onRequestOtp}
+                className="text-xs"
               >
-                Change email
+                {resendCooldown > 0
+                  ? `Resend code in ${resendCooldown}s`
+                  : "Resend code"}
               </Button>
             </div>
           ) : (

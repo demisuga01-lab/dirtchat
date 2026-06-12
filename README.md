@@ -9,18 +9,13 @@ Dirtchat is being built as a multi-model AI chat product. It is a
 layer that supports TokenRouter, OpenRouter, OpenAI, Anthropic, and
 self-hosted OpenAI-compatible endpoints.
 
-> **Status:** Prompt 5 of 10. This commit ships:
-> **premium conversation UX** on top of the Prompt 4 streaming chat backend.
-> Message actions: copy-to-clipboard, regenerate (new assistant message),
-> edit-and-resend (new user + assistant pair, history preserved). Safe
-> markdown-like content renderer with fenced code blocks (language label,
-> copy button, inline code support — no `dangerouslySetInnerHTML`).
-> Thread sidebar: search/filter by title, pin/unpin, archive, delete
-> with confirmation. Composer: autosizing textarea (max 200px),
-> character count with warning near limit, edit mode with inline cancel.
-> Keyboard shortcuts: Ctrl+N new thread, Ctrl+K focus sidebar search,
-> Esc cancel edit. Provider-agnostic — no hardcoded model/vendor.
-> File uploads, reasoning controls, and deployment ship in later prompts.
+> **Status:** Prompt 6 of 10. This commit ships:
+> **full auth & brand rebuild** — original Dirtchat logo (chat-bubble D with
+> model-routing line), model routing constellation on the landing page,
+> polished auth forms with specific env-var messaging and OTP resend cooldown,
+> accept-terms with sign-out escape, dot-grid backgrounds, glassmorphism,
+> security advisor fixes (revoked public SECURITY DEFINER functions, tightened
+> avatars bucket listing, fixed mutable search_path), and Stitch design system.
 
 ## Stack
 

@@ -7,6 +7,7 @@ import { AuthCard } from "@/components/auth/auth-card";
 import { SignUpForm, type LegalDocOption } from "@/components/auth/sign-up-form";
 import { ThemeToggle } from "@/components/app/theme-toggle";
 import { SupabaseConfigNotice } from "@/components/app/setup-notice";
+import { DirtchatLogo } from "@/components/brand/dirtchat-logo";
 
 export const metadata = {
   title: "Create your account",
@@ -39,19 +40,25 @@ export default async function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-background">
-      <header className="flex h-14 items-center justify-between border-b border-border/60 px-6">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-sm font-semibold"
-        >
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
-            D
-          </div>
-          Dirtchat
+    <div className="relative flex min-h-[100dvh] flex-col bg-background">
+      {/* Dot grid background pattern */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, hsl(var(--muted-foreground) / 0.07) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
+      />
+
+      <header className="flex h-14 items-center justify-between border-b border-border/60 bg-background/70 px-6 backdrop-blur-sm">
+        <Link href="/" className="flex items-center">
+          <DirtchatLogo size="sm" showWordmark />
         </Link>
         <ThemeToggle />
       </header>
+
       <main className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="flex w-full max-w-md flex-col gap-4">
           <SupabaseConfigNotice />
@@ -66,4 +73,3 @@ export default async function SignUpPage() {
     </div>
   );
 }
-

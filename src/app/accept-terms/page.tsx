@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseEnv } from "@/lib/utils";
+import { DirtchatLogo } from "@/components/brand/dirtchat-logo";
 import { AcceptTermsForm } from "./accept-terms-form";
 
 export const metadata = {
@@ -48,7 +50,30 @@ export default async function AcceptTermsPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] max-w-3xl flex-col px-4 py-12">
+    <div className="relative mx-auto flex min-h-[100dvh] max-w-3xl flex-col px-4 py-12">
+      {/* Dot grid background */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, hsl(var(--muted-foreground) / 0.07) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
+      />
+
+      <div className="mb-4 flex items-center justify-between">
+        <DirtchatLogo size="sm" showWordmark />
+        <form action="/api/auth/sign-out" method="POST">
+          <button
+            type="submit"
+            className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            Sign out
+          </button>
+        </form>
+      </div>
+
       <div className="mb-8">
         <h1 className="text-2xl font-bold">Accept terms to continue</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -58,6 +83,13 @@ export default async function AcceptTermsPage() {
       </div>
 
       <AcceptTermsForm pendingDocs={pendingDocs} />
+
+      <p className="mt-6 text-center text-xs text-muted-foreground">
+        Having trouble?{" "}
+        <Link href="/sign-in" className="underline underline-offset-4">
+          Go back to sign in
+        </Link>
+      </p>
     </div>
   );
 }

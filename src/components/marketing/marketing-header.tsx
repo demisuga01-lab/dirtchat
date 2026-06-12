@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DirtchatLogo } from "@/components/brand/dirtchat-logo";
 import { ThemeToggle } from "@/components/app/theme-toggle";
 
 const navLinks = [
@@ -24,12 +25,9 @@ export function MarketingHeader() {
         <div className="justify-self-start">
           <Link
             href="/"
-            className="flex items-center gap-2.5 text-lg font-bold tracking-tight"
+            className="flex items-center"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-              D
-            </div>
-            Dirtchat
+            <DirtchatLogo size="md" showWordmark />
           </Link>
         </div>
 
@@ -62,12 +60,9 @@ export function MarketingHeader() {
       <div className="mx-auto flex h-[72px] max-w-[1600px] items-center justify-between px-6 md:hidden lg:px-10 2xl:px-14">
         <Link
           href="/"
-          className="flex items-center gap-2.5 text-lg font-bold tracking-tight"
+          className="flex items-center"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-            D
-          </div>
-          Dirtchat
+          <DirtchatLogo size="md" showWordmark />
         </Link>
 
         <div className="flex items-center gap-2">
