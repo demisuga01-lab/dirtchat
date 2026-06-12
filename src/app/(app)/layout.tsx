@@ -36,6 +36,7 @@ export default async function ProtectedLayout({
     <AppShell
       title="Dirtchat"
       userLabel={userLabel}
+      userEmail={data.user.email}
     >
       {children}
     </AppShell>

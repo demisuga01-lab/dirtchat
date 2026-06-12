@@ -1,25 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { Sidebar } from "@/components/app/sidebar";
+import { WorkspaceSidebar } from "@/components/app/sidebar";
 import { MobileNav } from "@/components/app/mobile-nav";
-import { SignOutButton } from "@/components/auth/sign-out-button";
-import { ThemeToggle } from "@/components/app/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 
 export interface AppShellProps {
   title: string;
   userLabel?: string;
+  userEmail?: string;
   children: React.ReactNode;
 }
 
-export function AppShell({ title, userLabel, children }: AppShellProps) {
+export function AppShell({ title, userLabel, userEmail, children }: AppShellProps) {
   const [navOpen, setNavOpen] = React.useState(false);
 
   return (
     <div className="flex min-h-[100dvh] w-full">
-      <Sidebar />
+      <WorkspaceSidebar userEmail={userEmail} />
       <MobileNav open={navOpen} onClose={() => setNavOpen(false)} />
       <div className="flex w-full min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border/60 bg-background/70 px-4 backdrop-blur md:px-6">
@@ -41,10 +40,6 @@ export function AppShell({ title, userLabel, children }: AppShellProps) {
                 {userLabel}
               </span>
             ) : null}
-            <ThemeToggle />
-            <div className="hidden sm:block">
-              <SignOutButton />
-            </div>
           </div>
         </header>
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>

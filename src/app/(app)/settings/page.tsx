@@ -1,151 +1,50 @@
 import { createClient } from "@/lib/supabase/server";
-import { getSupabaseEnv } from "@/lib/utils";
-import { SignOutButton } from "@/components/auth/sign-out-button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowRight, KeyRound } from "lucide-react";
+import { SettingsCenter } from "@/components/settings/settings-center";
 
 export const metadata = {
   title: "Settings",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function SettingsPage() {
-  const { isConfigured } = getSupabaseEnv();
-  const supabase = isConfigured ? await createClient() : null;
-  const { data } = supabase
-    ? await supabase.auth.getUser()
-    : { data: { user: null } };
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
   const user = data.user;
 
-  const displayName =
-    (user?.user_metadata?.display_name as string | undefined) ??
-    user?.email?.split("@")[0] ??
-    "—";
+  const userData = {
+    email: user?.email,
+    displayName: (user?.user_metadata?.display_name as string) ?? user?.email?.split("@")[0],
+    createdAt: user?.created_at,
+    providersCount: 0,
+    modelsCount: 0,
+  };
+
+  // Load counts and prefs in parallel
+  if (user) {
+    const userId = user.id;
+    const [
+      { count: providersCount },
+      { count: modelsCount },
+      { data: prefs },
+    ] = await Promise.all([
+      supabase.from("provider_connections").select("*", { count: "exact", head: true }).eq("user_id", userId),
+      supabase.from("provider_models").select("*", { count: "exact", head: true }).eq("user_id", userId).eq("is_available", true),
+      supabase.from("user_preferences").select("*").eq("user_id", userId).maybeSingle(),
+    ]);
+
+    userData.providersCount = providersCount ?? 0;
+    userData.modelsCount = modelsCount ?? 0;
+
+    return (
+      <SettingsCenter
+        user={userData}
+        initialPrefs={prefs as Record<string, unknown> | null}
+      />
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
-        <p className="max-w-2xl text-muted-foreground">
-          Manage your profile, theme preferences, and provider connections.
-        </p>
-      </header>
-
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile</CardTitle>
-            <CardDescription>
-              Your account information.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3 text-sm">
-            <Field label="Email" value={user?.email ?? "Not signed in"} />
-            <Field
-              label="Display name"
-              value={displayName}
-            />
-            <Field
-              label="User ID"
-              value={user?.id ?? "—"}
-              mono
-            />
-            <Field
-              label="Auth provider"
-              value={user?.app_metadata?.provider ?? "email"}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Preferences</CardTitle>
-            <CardDescription>
-              Theme and appearance. Toggle in the top right.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3 text-sm">
-            <Field label="Theme" value="System (toggle in the top right)" />
-            <Field
-              label="Time zone"
-              value={
-                Intl.DateTimeFormat().resolvedOptions().timeZone || "—"
-              }
-            />
-            <p className="text-xs text-muted-foreground">
-              More preferences (model defaults, reasoning controls, etc.)
-              are coming soon.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Providers</CardTitle>
-              <Badge variant="success">Ready</Badge>
-            </div>
-            <CardDescription>
-              Connect TokenRouter, OpenRouter, or a custom OpenAI-compatible
-              router. Keys are encrypted at rest. Browse and manage available
-              models per provider.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button href="/settings/providers" variant="outline">
-              <KeyRound className="h-4 w-4" />
-              Manage providers and models
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Session</CardTitle>
-            <CardDescription>
-              Sign out of this device. Your data is preserved.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SignOutButton />
-          </CardContent>
-        </Card>
-      </section>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </span>
-      <span
-        className={
-          mono
-            ? "rounded-md bg-muted/40 px-2 py-1 font-mono text-xs"
-            : "text-foreground"
-        }
-      >
-        {value}
-      </span>
-    </div>
+    <SettingsCenter user={userData} initialPrefs={null} />
   );
 }
