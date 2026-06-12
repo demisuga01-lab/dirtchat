@@ -3,14 +3,20 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import { getSupabaseEnv } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toaster";
 
-export function SignUpForm() {
+export type LegalDocOption = {
+  id: string;
+  document_type: string;
+  version: string;
+  title: string;
+};
+
+export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
   const router = useRouter();
   const { push } = useToast();
   const [displayName, setDisplayName] = React.useState("");
@@ -19,30 +25,41 @@ export function SignUpForm() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [info, setInfo] = React.useState<string | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = React.useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = React.useState(false);
   const { isConfigured } = getSupabaseEnv();
+
+  const termsDoc = legalDocs.find((d) => d.document_type === "terms_of_service");
+  const privacyDoc = legalDocs.find((d) => d.document_type === "privacy_policy");
+  const canSubmit = acceptedTerms && acceptedPrivacy;
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isConfigured) {
-      setError(
-        "Supabase environment is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local."
-      );
+      setError("Supabase environment is not configured.");
       return;
     }
     setLoading(true);
     setError(null);
     setInfo(null);
     try {
-      const supabase = createClient();
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { display_name: displayName || email.split("@")[0] },
-        },
+      const acceptedIds: string[] = [];
+      if (acceptedTerms && termsDoc) acceptedIds.push(termsDoc.id);
+      if (acceptedPrivacy && privacyDoc) acceptedIds.push(privacyDoc.id);
+
+      const res = await fetch("/api/auth/sign-up", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          displayName: displayName || email.split("@")[0],
+          acceptedLegalDocumentIds: acceptedIds,
+        }),
       });
-      if (signUpError) {
-        setError(signUpError.message);
+      const data = await res.json();
+      if (!data.ok) {
+        setError(data.error ?? "Sign-up failed");
         return;
       }
       if (data.session) {
@@ -114,6 +131,52 @@ export function SignUpForm() {
           disabled={!isConfigured || loading}
         />
       </div>
+
+      {/* Legal acceptance checkboxes */}
+      {termsDoc ? (
+        <label className="flex items-start gap-3 rounded-md border border-border p-3 cursor-pointer hover:bg-muted/30 transition-colors">
+          <input
+            type="checkbox"
+            checked={acceptedTerms}
+            onChange={(e) => setAcceptedTerms(e.target.checked)}
+            disabled={loading}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+          />
+          <span className="text-sm text-muted-foreground leading-relaxed">
+            I have read and agree to the{" "}
+            <Link
+              href="/terms"
+              target="_blank"
+              className="font-medium text-foreground underline-offset-4 hover:underline"
+            >
+              Terms of Service
+            </Link>
+          </span>
+        </label>
+      ) : null}
+
+      {privacyDoc ? (
+        <label className="flex items-start gap-3 rounded-md border border-border p-3 cursor-pointer hover:bg-muted/30 transition-colors">
+          <input
+            type="checkbox"
+            checked={acceptedPrivacy}
+            onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+            disabled={loading}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+          />
+          <span className="text-sm text-muted-foreground leading-relaxed">
+            I have read and agree to the{" "}
+            <Link
+              href="/privacy"
+              target="_blank"
+              className="font-medium text-foreground underline-offset-4 hover:underline"
+            >
+              Privacy Policy
+            </Link>
+          </span>
+        </label>
+      ) : null}
+
       {error ? (
         <p
           role="alert"
@@ -130,9 +193,14 @@ export function SignUpForm() {
           {info}
         </p>
       ) : null}
-      <Button type="submit" disabled={!isConfigured || loading}>
+      <Button type="submit" disabled={!isConfigured || loading || !canSubmit}>
         {loading ? "Creating account…" : "Create account"}
       </Button>
+      {!canSubmit && isConfigured ? (
+        <p className="text-xs text-muted-foreground text-center">
+          You must agree to the Terms of Service and Privacy Policy to create an account.
+        </p>
+      ) : null}
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link

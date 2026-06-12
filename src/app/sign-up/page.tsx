@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseEnv } from "@/lib/utils";
 import { AuthCard } from "@/components/auth/auth-card";
-import { SignUpForm } from "@/components/auth/sign-up-form";
+import { SignUpForm, type LegalDocOption } from "@/components/auth/sign-up-form";
 import { ThemeToggle } from "@/components/app/theme-toggle";
 import { SetupNotice } from "@/components/app/setup-notice";
 
@@ -18,6 +19,21 @@ export default async function SignUpPage() {
     const { data } = await supabase.auth.getUser();
     if (data.user) {
       redirect("/dashboard");
+    }
+  }
+
+  // Fetch active legal documents for display on the sign-up form
+  let legalDocs: LegalDocOption[] = [];
+  if (isConfigured) {
+    try {
+      const admin = createAdminClient();
+      const { data } = await admin
+        .from("legal_documents")
+        .select("id, document_type, version, title")
+        .eq("is_active", true);
+      legalDocs = (data ?? []) as LegalDocOption[];
+    } catch {
+      // Non-fatal - form will render without checkboxes
     }
   }
 
@@ -47,7 +63,7 @@ export default async function SignUpPage() {
             title="Create your account"
             description="A few details and you're in. You can change anything later."
           >
-            <SignUpForm />
+            <SignUpForm legalDocs={legalDocs} />
           </AuthCard>
         </div>
       </main>

@@ -30,6 +30,10 @@ const EXPECTED_TABLES = [
   "chat_threads",
   "chat_messages",
   "chat_generation_runs",
+  "user_preferences",
+  "legal_documents",
+  "user_legal_acceptances",
+  "user_account_events",
 ];
 
 const EXPECTED_BUCKETS = [

@@ -15,6 +15,8 @@ import {
   EyeOff,
   Hash,
   ArrowRight,
+  FileText,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +29,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/toaster";
 
 type PreferenceData = {
   user_id?: string;
@@ -76,11 +79,13 @@ async function savePreferences(updates: Record<string, unknown>): Promise<boolea
 }
 
 export function SettingsCenter({ user, initialPrefs }: SettingsCenterProps) {
+  const { push } = useToast();
   const [activeTab, setActiveTab] = useState<TabId>("account");
   const [prefs, setPrefs] = useState<PreferenceData>(initialPrefs ?? {});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [displayName, setDisplayName] = useState(user.displayName ?? "");
+  const [savingProfile, setSavingProfile] = useState(false);
 
   const persist = useCallback(async (updates: Record<string, unknown>) => {
     setSaving(true);
@@ -98,6 +103,27 @@ export function SettingsCenter({ user, initialPrefs }: SettingsCenterProps) {
     const current = (prefs as Record<string, unknown>)[key];
     persist({ [key]: !Boolean(current) });
   };
+
+  async function saveDisplayName() {
+    setSavingProfile(true);
+    try {
+      const res = await fetch("/api/account/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ displayName }),
+      });
+      if (res.ok) {
+        push({ title: "Profile updated", variant: "success" });
+      } else {
+        const data = await res.json();
+        push({ title: "Failed to update profile", description: data.error, variant: "destructive" });
+      }
+    } catch {
+        push({ title: "Error", description: "Something went wrong.", variant: "destructive" });
+    } finally {
+      setSavingProfile(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6 sm:flex-row">
@@ -129,7 +155,7 @@ export function SettingsCenter({ user, initialPrefs }: SettingsCenterProps) {
       {/* Tab content */}
       <div className="min-w-0 flex-1">
         {activeTab === "account" && (
-          <AccountTab user={user} displayName={displayName} setDisplayName={setDisplayName} />
+          <AccountTab user={user} displayName={displayName} setDisplayName={setDisplayName} onSave={saveDisplayName} savingProfile={savingProfile} />
         )}
         {activeTab === "appearance" && (
           <AppearanceTab prefs={prefs} toggle={toggle} persist={persist} saving={saving} />
@@ -152,10 +178,14 @@ function AccountTab({
   user,
   displayName,
   setDisplayName,
+  onSave,
+  savingProfile,
 }: {
   user: SettingsCenterProps["user"];
   displayName: string;
   setDisplayName: (v: string) => void;
+  onSave: () => Promise<void>;
+  savingProfile: boolean;
 }) {
   const initials = (user.displayName ?? user.email ?? "U")
     .slice(0, 2)
@@ -185,15 +215,24 @@ function AccountTab({
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="display-name">Display name</Label>
-            <Input
-              id="display-name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your display name"
-            />
-            <p className="text-xs text-muted-foreground">
-              Profile updates are not yet persisted. This field shows your current session value.
-            </p>
+            <div className="flex gap-2">
+              <Input
+                id="display-name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your display name"
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onSave}
+                disabled={savingProfile}
+                className="shrink-0"
+              >
+                {savingProfile ? "Saving…" : "Save"}
+              </Button>
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             <Label>Email</Label>
@@ -213,6 +252,32 @@ function AccountTab({
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Legal
+          </CardTitle>
+          <CardDescription>
+            View and manage your legal document acceptances.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center gap-3">
+          <CheckCircle className="h-4 w-4 text-success" />
+          <span className="text-sm text-muted-foreground">
+            You can review the{" "}
+            <a href="/terms" target="_blank" className="font-medium text-foreground underline-offset-4 hover:underline">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" target="_blank" className="font-medium text-foreground underline-offset-4 hover:underline">
+              Privacy Policy
+            </a>{" "}
+            at any time.
+          </span>
         </CardContent>
       </Card>
     </div>
