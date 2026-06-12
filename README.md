@@ -5,24 +5,30 @@
 
 Dirtchat is being built as a multi-model AI chat product. It is a
 [Next.js](https://nextjs.org) 15 app (App Router) on
-[Supabase](https://supabase.com) Auth + Postgres + Storage, with a custom
-LLM router layer planned to support TokenRouter, OpenRouter, OpenAI,
-Anthropic, and self-hosted OpenAI-compatible endpoints.
+[Supabase](https://supabase.com) Auth + Postgres, with a custom LLM router
+layer that supports TokenRouter, OpenRouter, OpenAI, Anthropic, and
+self-hosted OpenAI-compatible endpoints.
 
-> **Status:** Prompt 1 of 10. This commit ships the **foundation only**:
-> project scaffold, Supabase auth baseline, premium app shell, dashboard,
-> chat workspace placeholder, settings, provider placeholders, and a local
-> Supabase migration. The actual chat backend, LLM routing, file uploads,
-> and provider key storage arrive in later prompts.
+> **Status:** Prompt 2 of 10. This commit ships:
+> landing-page polish, a real **provider connection manager** (CRUD + test),
+> **AES-256-GCM server-side encryption** for provider API keys, two new
+> Supabase tables (`provider_connections`, `provider_connection_secrets`),
+> and supporting server actions / route handlers. Live chat streaming,
+> model discovery / capability detection, reasoning controls, file
+> uploads, and deployment ship in later prompts.
 
 ## Stack
 
 - **Framework:** Next.js 15 (App Router) + React 19 + TypeScript
 - **Styling:** Tailwind CSS, with a small set of in-house UI primitives
-- **Auth + DB:** Supabase (Auth, Postgres, Storage — Storage in a later prompt)
+- **Auth + DB:** Supabase (Auth, Postgres) + a service-role admin client
+  for encrypted-secret reads/writes
 - **Theming:** `next-themes` (light / dark / system)
 - **Icons:** `lucide-react`
+- **Validation:** `zod`
 - **Class utilities:** `clsx` + `tailwind-merge`
+- **Encryption:** Node `crypto` (AES-256-GCM) — see
+  `src/lib/security/provider-crypto.ts`
 
 ## Repository layout
 
@@ -36,6 +42,7 @@ Anthropic, and self-hosted OpenAI-compatible endpoints.
 │   │   │   ├── dashboard/       # /dashboard
 │   │   │   ├── chat/            # /chat
 │   │   │   └── settings/        # /settings, /settings/providers
+│   │   ├── api/providers/[id]/test/  # POST -> connection test
 │   │   ├── auth/callback/       # OAuth / email-link callback
 │   │   ├── sign-in/             # /sign-in
 │   │   ├── sign-up/             # /sign-up
@@ -44,21 +51,21 @@ Anthropic, and self-hosted OpenAI-compatible endpoints.
 │   │   ├── not-found.tsx
 │   │   └── globals.css
 │   ├── components/
-│   │   ├── app/                 # App shell, sidebar, topbar, theme toggle
+│   │   ├── app/                 # App shell, sidebar, theme toggle
 │   │   ├── auth/                # Sign-in / sign-up / sign-out forms
 │   │   ├── chat/                # Conversation sidebar, chat placeholder
 │   │   ├── marketing/           # Landing page sections
-│   │   ├── providers/           # Theme provider
+│   │   ├── providers/           # Theme + provider-manager
 │   │   └── ui/                  # Button, card, input, label, badge, toaster
 │   ├── lib/
-│   │   ├── supabase/
-│   │   │   ├── client.ts        # Browser Supabase client
-│   │   │   ├── server.ts        # Server Supabase client (cookies)
-│   │   │   └── middleware.ts    # Session refresh helper
-│   │   └── utils.ts             # `cn()` + Supabase env helper
+│   │   ├── env/server.ts        # Server-only env reader
+│   │   ├── providers/           # URL normalize, types, provider service
+│   │   ├── security/            # Provider crypto + redaction
+│   │   ├── supabase/            # client / server / middleware / admin
+│   │   └── utils.ts             # `cn()` + public Supabase env helper
 │   └── middleware.ts            # Next.js middleware -> Supabase session
 ├── supabase/
-│   └── migrations/              # Local SQL migrations (not yet applied)
+│   └── migrations/              # Local SQL migrations (also applied via MCP)
 ├── audits/                      # Audit artifacts per prompt
 ├── .env.example
 ├── .gitignore
@@ -73,8 +80,7 @@ Anthropic, and self-hosted OpenAI-compatible endpoints.
 ### 1. Prerequisites
 
 - Node.js **20+** (tested on Node 20 LTS and Node 25).
-- npm (a `package-lock.json` is checked in; if you prefer `pnpm` or `yarn`,
-  remove the lockfile and use your package manager of choice).
+- npm (a `package-lock.json` is checked in).
 - A Supabase project (free tier is fine for development).
 
 ### 2. Install dependencies
@@ -85,45 +91,57 @@ npm install
 
 ### 3. Configure environment variables
 
-Copy the example file and fill in your real Supabase project values:
+Copy the example file and fill in real values:
 
 ```bash
 cp .env.example .env.local
 ```
 
-`.env.local` is **gitignored** and must never be committed. The expected
-variables are:
+`.env.local` is **gitignored** and must never be committed.
 
-```env
-NEXT_PUBLIC_SUPABASE_URL="https://your-project-ref.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
+| Variable | Required? | Notes |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes (for live auth) | Project URL from **Project Settings → API**. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes (for live auth) | Publishable key. Safe in the browser. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Required for Prompt 2 | Server-only. Used to bypass RLS for the encrypted secrets table. **Never** expose to the browser. |
+| `PROVIDER_KEY_ENCRYPTION_KEY` | Required for Prompt 2 | Base64-encoded 32-byte AES-256-GCM key. See generation commands below. |
+
+Generate a 32-byte key with PowerShell:
+
+```powershell
+[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))
 ```
 
-You can find both values in your Supabase dashboard under
-**Project Settings → API**.
+Or with OpenSSL:
 
-> The app builds and renders even without these values. Protected pages
-> show a "Supabase is not configured" notice until the env vars are set,
-> so you can preview the layout before wiring up Supabase.
+```bash
+openssl rand -base64 32
+```
 
-### 4. Apply the local migration (optional but recommended)
+> The app builds and renders without these values, but provider CRUD
+> (and the connection test) will surface a safe configuration error until
+> they are set.
 
-The repository ships a local SQL migration under
-`supabase/migrations/20260612000100_initial_profiles.sql`. It is **not**
-applied to your Supabase project automatically.
+### 4. Apply Supabase migrations
 
-To apply it, you can either:
+The repo ships two local SQL migrations under `supabase/migrations/`:
 
-- Open the Supabase dashboard → **SQL Editor** → paste the file's
-  contents and run it, **or**
-- Install the [Supabase CLI](https://supabase.com/docs/guides/cli) and run
-  `supabase db push` once the project is linked.
+- `20260612000100_initial_profiles.sql` — `public.profiles` + RLS +
+  `handle_new_user` trigger
+- `20260612000200_provider_connections.sql` — `provider_connections` +
+  `provider_connection_secrets` + RLS
 
-The migration is idempotent and only creates:
+Apply them in one of these ways:
 
-- `public.profiles` (user-owned profile rows)
-- Row-level security policies
-- A trigger that creates a `profiles` row for every new `auth.users` row
+- **Supabase CLI**: link the project, then `supabase db push`.
+- **Supabase SQL editor**: paste each file's contents and run.
+- **Programmatically via MCP** (used during this prompt): the
+  `mcp__supabase__apply_migration` tool was called to apply both
+  migrations to the connected dev project.
+
+The migrations are idempotent (`create … if not exists`, `drop … if
+exists`). They do not drop tables, do not disable RLS, and do not
+modify `auth.users` rows.
 
 ### 5. Run the dev server
 
@@ -139,7 +157,7 @@ Then open:
 - `http://localhost:3000/dashboard` — protected dashboard
 - `http://localhost:3000/chat` — protected chat placeholder
 - `http://localhost:3000/settings` — protected settings
-- `http://localhost:3000/settings/providers` — provider placeholders
+- `http://localhost:3000/settings/providers` — provider manager
 
 ## Scripts
 
@@ -150,48 +168,70 @@ Then open:
 | `npm run start` | Run the production build. |
 | `npm run lint` | Run ESLint using Next.js's recommended config. |
 
-## Prompt 1 scope
+## Provider manager (Prompt 2)
 
-✅ Built in this prompt:
+`/settings/providers` is a real, persisted connection manager.
 
-- Next.js 15 + TypeScript + Tailwind scaffold (`src/` layout, `@/*` alias,
-  ESLint, `next-themes`).
-- Premium landing page with hero, features, and footer.
-- Supabase SSR auth baseline (`@supabase/supabase-js` + `@supabase/ssr`)
-  with browser, server, and middleware clients.
-- Email/password sign-up and sign-in flows with safe error handling.
-- Auth callback route for OAuth / email-link confirmation.
+- **Presets:** TokenRouter (recommended), OpenRouter, OpenAI-compatible
+  custom, Anthropic-compatible custom.
+- **TokenRouter preset:** label `TokenRouter (MiniMax-M3)`, base URL
+  `https://api.tokenrouter.com/v1/chat/completions`, default model
+  `MiniMax-M3`.
+- **Encryption:** keys are encrypted server-side with AES-256-GCM using
+  `PROVIDER_KEY_ENCRYPTION_KEY`. Only the last 4 characters are ever
+  returned to the browser. The full secret is never displayed, never
+  logged, and never returned in any provider API response.
+- **RLS:** `provider_connections` is fully user-owned (SELECT / INSERT /
+  UPDATE / DELETE). `provider_connection_secrets` has **no** SELECT policy
+  for `authenticated` — reads only via the service-role admin client.
+- **Connection test:** `/api/providers/[id]/test` runs an
+  OpenAI-compatible probe (`GET /models` if available, else a
+  single-token chat-completions ping) and returns a safe, redacted
+  result. Anthropic-compatible test support ships in a later prompt.
+- **Anthropic-compatible:** the form accepts the URL, but the test
+  endpoint returns "test support ships in a later prompt" so the UI
+  never fakes success.
+
+## Prompt 1 scope recap
+
+✅ Built in Prompt 1:
+
+- Next.js 15 + TypeScript + Tailwind scaffold.
+- Premium landing page (subsequently polished in Prompt 2 — the
+  `Prompt 1 · Foundation preview` badge has been removed).
+- Supabase SSR auth baseline, email/password flows, auth callback.
 - Protected route group `(app)` with sidebar, topbar, mobile nav, theme
-  toggle, and sign-out.
-- Dashboard with status cards and quick links.
-- Chat workspace placeholder with conversation sidebar, composer, and a
-  model selector — **no live LLM call**.
-- Settings page with profile fields and a disabled provider form.
-- Provider settings page showing the planned shape of TokenRouter,
-  OpenRouter, OpenAI, Anthropic, and a custom router.
-- Local Supabase migration: `profiles` table, RLS, and
-  `handle_new_user` trigger.
+  toggle, sign-out.
+- Dashboard with status cards.
+- Chat workspace placeholder (no live LLM).
+- Settings with profile fields and provider placeholders (now real in
+  Prompt 2).
+- Local Supabase migration: `profiles` table, RLS, `handle_new_user`
+  trigger (also applied to the dev project).
 - Hardened `.gitignore` and placeholder-only `.env.example`.
-- `audits/prompt-1-foundation-audit.md`.
 
-⛔ **Not** built in this prompt (deferred):
+⛔ **Not yet built** (deferred):
 
-- Live LLM chat, streaming responses, or any provider call.
-- User API key storage or encryption.
-- Model discovery, capability detection, or reasoning controls.
+- Live LLM chat, streaming responses.
+- Model discovery, capability detection, reasoning controls.
 - File / image upload or Supabase Storage wiring.
 - Usage logging, quotas, billing, or admin tools.
 - Production deployment.
 
 ## Security & secrets
 
-- The `NEXT_PUBLIC_*` env vars are safe to expose to the browser. They are
-  the only Supabase variables used in Prompt 1.
-- The Supabase **service-role** key is **not** required and **must not** be
-  added to `.env.local` in Prompt 1. It is intentionally not used yet.
+- The `NEXT_PUBLIC_*` env vars are safe to expose to the browser.
+- `SUPABASE_SERVICE_ROLE_KEY` and `PROVIDER_KEY_ENCRYPTION_KEY` are
+  server-only and must never be exposed to the browser, never logged,
+  and never committed.
 - Never commit `.env`, `.env.local`, or any file with a real key.
 - `.gitignore` already excludes `.claude/`, `.mcp.json`, and other local
   agent / MCP configuration files. These must not be published.
+- Errors are redacted before logging or surfacing to the client. The
+  `redact()` helper in `src/lib/security/redact.ts` strips
+  `Bearer …`, `sk-…`, JWT-shaped values, and key/value pairs whose
+  field name contains `key`, `secret`, `token`, `password`, or
+  `service[_-]?role`.
 
 ## License
 

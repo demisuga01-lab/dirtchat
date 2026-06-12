@@ -19,11 +19,8 @@ export function MarketingHeader() {
           <Link href="#features" className="hover:text-foreground">
             Features
           </Link>
-          <Link href="/dashboard" className="hover:text-foreground">
-            Dashboard
-          </Link>
-          <Link href="/chat" className="hover:text-foreground">
-            Chat
+          <Link href="/sign-in" className="hover:text-foreground">
+            Sign in
           </Link>
         </nav>
         <div className="flex items-center gap-2">

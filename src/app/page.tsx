@@ -20,8 +20,8 @@ export default function HomePage() {
               Ready to set up your workspace?
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-balance text-muted-foreground">
-              Create an account to lock in your settings, then connect
-              providers as soon as Prompt 2 lands.
+              Create an account to lock in your settings, then connect your
+              own providers from a single dashboard.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button href="/sign-up" size="lg">

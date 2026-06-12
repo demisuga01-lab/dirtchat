@@ -91,17 +91,17 @@ export default async function SettingsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Providers</CardTitle>
-              <Badge variant="outline">Coming next</Badge>
+              <Badge variant="success">Ready</Badge>
             </div>
             <CardDescription>
-              TokenRouter, OpenRouter, OpenAI, Anthropic, and custom routers
-              are stubbed here for now. Real key storage ships in Prompt 2.
+              Connect TokenRouter, OpenRouter, or a custom OpenAI-compatible
+              router. Keys are encrypted server-side.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button href="/settings/providers" variant="outline">
               <KeyRound className="h-4 w-4" />
-              Open provider placeholders
+              Manage providers
               <ArrowRight className="h-4 w-4" />
             </Button>
           </CardContent>

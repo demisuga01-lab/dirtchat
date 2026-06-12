@@ -50,10 +50,10 @@ export function Sidebar() {
       </nav>
       <div className="border-t border-border/60 p-3 text-xs text-muted-foreground">
         <div className="rounded-md border border-dashed border-border/60 p-3">
-          <div className="font-medium text-foreground">Foundation build</div>
+          <div className="font-medium text-foreground">Dirtchat</div>
           <p className="mt-1 leading-relaxed">
-            Auth, layout, and providers scaffolding. Live chat is coming in
-            later prompts.
+            Provider manager is live. Live chat streaming ships in a later
+            prompt.
           </p>
         </div>
       </div>
