@@ -94,4 +94,97 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     @apply rounded-full bg-muted-foreground/30;
   }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(2%, -2%) scale(1.05); }
+    66% { transform: translate(-1%, 1%) scale(0.97); }
+  }
+
+  @keyframes hover-lift {
+    0% { transform: translateY(0); box-shadow: 0 1px 2px rgba(0,0,0,0); }
+    100% { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  }
+
+  @keyframes connecting-pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(var(--ring) / 0.1); }
+    50% { box-shadow: 0 0 0 4px rgba(var(--ring) / 0.15); }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.7s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out forwards;
+  }
+
+  .animate-gradient-shift {
+    animation: gradient-shift 20s ease-in-out infinite;
+  }
+
+  .animate-connecting-pulse {
+    animation: connecting-pulse 2.4s ease-in-out infinite;
+  }
+
+  .hover-lift {
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+
+  :is(.dark) .hover-lift:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+  .animate-delay-500 { animation-delay: 500ms; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in-up,
+    .animate-fade-in,
+    .animate-gradient-shift,
+    .animate-connecting-pulse,
+    .glow-pulse {
+      animation: none;
+    }
+
+    .hover-lift,
+    .hover-lift:hover {
+      transform: none;
+      box-shadow: none;
+      transition: none;
+    }
+  }
 }

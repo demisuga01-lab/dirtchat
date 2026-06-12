@@ -12,11 +12,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Dirtchat — Premium multi-model AI chat workspace",
+    default: "Dirtchat — Private AI workspace for every model",
     template: "%s · Dirtchat",
   },
   description:
-    "Dirtchat is a premium, privacy-first AI chat workspace that routes your prompts across the best models — with a calm, focused interface.",
+    "Connect your own providers, switch models, and keep conversations organized in one focused AI workspace.",
   applicationName: "Dirtchat",
   authors: [{ name: "Dirtchat" }],
   keywords: [
@@ -25,20 +25,20 @@ export const metadata: Metadata = {
     "multi-model",
     "LLM router",
     "BYOK",
-    "Supabase",
+    "AI workspace",
     "ChatGPT alternative",
   ],
   openGraph: {
-    title: "Dirtchat — Premium multi-model AI chat workspace",
+    title: "Dirtchat — Private AI workspace for every model",
     description:
-      "A premium, privacy-first AI chat workspace that routes your prompts across the best models.",
+      "Connect your own providers, switch models, and keep conversations organized in one focused AI workspace.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "Dirtchat",
     description:
-      "A premium, privacy-first AI chat workspace that routes your prompts across the best models.",
+      "Connect your own providers, switch models, and keep conversations organized in one focused AI workspace.",
   },
 };
 

@@ -59,15 +59,7 @@ export function SignInForm() {
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
       {!isConfigured ? (
         <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-          Supabase is not configured. Sign-in is disabled until
-          <code className="mx-1 rounded bg-muted px-1 py-0.5">
-            NEXT_PUBLIC_SUPABASE_URL
-          </code>
-          and
-          <code className="mx-1 rounded bg-muted px-1 py-0.5">
-            NEXT_PUBLIC_SUPABASE_ANON_KEY
-          </code>
-          are set.
+          Authentication is not configured. Sign-in is unavailable right now.
         </div>
       ) : null}
       <div className="flex flex-col gap-2">
