@@ -1,71 +1,72 @@
 import { ArrowRight, MessageSquare, Layers, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProductPreview } from "@/components/marketing/product-preview";
 
 export function LandingHero() {
   return (
     <section className="relative flex min-h-[calc(100dvh-4rem)] w-full flex-col items-center justify-center overflow-hidden">
-      {/* Subtle radial backdrop — NOT a generic gradient blob */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--success)/0.03),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top,hsl(var(--success)/0.07),transparent_50%)]" />
-      </div>
-
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-16 text-center sm:py-24">
+      <div className="mx-auto flex w-full max-w-5xl flex-col items-center px-6 py-20 text-center sm:py-32">
         <div className="animate-fade-in-up">
-          <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-[-0.02em] text-foreground sm:text-6xl md:text-7xl">
-            Your models.
+          <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-6xl md:text-7xl">
+            Bring your providers.
             <br className="hidden sm:block" />
-            <span className="text-success">
-              One workspace.
-            </span>
+            Keep your threads.
           </h1>
         </div>
 
         <p className="animate-fade-in-up animate-delay-100 mt-6 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl">
-          Connect your own providers. Compare models side-by-side. Keep your data private.
+          Connect your own model keys. Start chats, switch models, and keep the work in one place.
         </p>
 
-        <div className="animate-fade-in-up animate-delay-200 mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button href="/sign-up" size="lg">
+        <div className="animate-fade-in-up animate-delay-200 mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Button href="/sign-up" size="lg" className="h-12 px-8 text-base">
             Get started
-            <ArrowRight className="h-4 w-4" />
           </Button>
-          <Button href="/sign-in" size="lg" variant="outline">
+          <Button href="/sign-in" size="lg" variant="outline" className="h-12 px-8 text-base">
             Sign in
           </Button>
         </div>
 
-        {/* Composed Product UI Mockup */}
-        <div className="animate-fade-in-up animate-delay-300 mt-12 w-full sm:mt-16">
-          <ProductPreview />
+        {/* Abstract Workflow Instead of Mockup */}
+        <div className="animate-fade-in-up animate-delay-300 mt-20 w-full max-w-4xl rounded-2xl border border-border/50 bg-card/30 p-8 sm:p-12">
+          <div className="flex flex-col items-center justify-between gap-8 md:flex-row md:gap-4">
+            <WorkflowStep number="1" title="Connect keys" />
+            <ArrowRight className="hidden h-5 w-5 text-muted-foreground/40 md:block" />
+            <WorkflowStep number="2" title="Pick a model" />
+            <ArrowRight className="hidden h-5 w-5 text-muted-foreground/40 md:block" />
+            <WorkflowStep number="3" title="Keep the thread" />
+          </div>
         </div>
 
-        <p className="animate-fade-in animate-delay-300 mt-6 max-w-md text-xs text-muted-foreground">
-          Save your threads. Control your routing. Avoid vendor lock-in.
-        </p>
-
-        <div className="animate-fade-in-up animate-delay-300 mt-12 grid w-full grid-cols-1 items-stretch gap-4 text-left sm:grid-cols-3">
+        <div className="animate-fade-in-up animate-delay-400 mt-16 grid w-full grid-cols-1 items-stretch gap-6 text-left sm:grid-cols-3">
           <HeroStat
-            icon={<MessageSquare className="h-4 w-4" />}
-            label="Streaming chat"
-            value="Real-time responses. Direct to your API."
+            icon={<MessageSquare className="h-5 w-5 text-muted-foreground" />}
+            label="Unified Workspace"
+            value="All your conversations in one place."
           />
           <HeroStat
-            icon={<Layers className="h-4 w-4" />}
-            label="Multi-model"
-            value="Switch models instantly in one window."
+            icon={<Layers className="h-5 w-5 text-muted-foreground" />}
+            label="Model Independence"
+            value="Switch providers without friction."
           />
           <HeroStat
-            icon={<Shield className="h-4 w-4" />}
-            label="Private"
-            value="Your keys, direct connections."
+            icon={<Shield className="h-5 w-5 text-muted-foreground" />}
+            label="True Privacy"
+            value="Direct API connections. No middlemen."
           />
         </div>
       </div>
     </section>
+  );
+}
+
+function WorkflowStep({ number, title }: { number: string; title: string }) {
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-foreground">
+        {number}
+      </div>
+      <span className="text-sm font-medium text-foreground">{title}</span>
+    </div>
   );
 }
 
@@ -79,12 +80,12 @@ function HeroStat({
   value: string;
 }) {
   return (
-    <div className="flex h-full flex-col gap-2 rounded-xl border border-border/70 bg-card/40 p-5 backdrop-blur transition-colors hover:border-success/40">
-      <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        {icon}
-        {label}
+    <div className="flex flex-col gap-3 rounded-xl border border-border/40 bg-card/20 p-6">
+      {icon}
+      <div>
+        <div className="text-sm font-medium text-foreground">{label}</div>
+        <div className="mt-1 text-sm text-muted-foreground">{value}</div>
       </div>
-      <div className="text-sm font-medium text-foreground">{value}</div>
     </div>
   );
 }
