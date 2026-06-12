@@ -9,17 +9,17 @@ Dirtchat is being built as a multi-model AI chat product. It is a
 layer that supports TokenRouter, OpenRouter, OpenAI, Anthropic, and
 self-hosted OpenAI-compatible endpoints.
 
-> **Status:** Prompt 3 of 10. This commit ships:
-> **model discovery and capability detection** on top of the Prompt 2
-> provider manager. New Supabase tables: `provider_models`,
-> `model_capabilities`, `model_discovery_runs`, and
-> `model_discovery_events`. Server-only discovery probes
-> (`GET /models` for OpenAI / OpenRouter, with a tiny chat-completions
-> fallback for full-endpoint providers like TokenRouter), conservative
-> capability inference with nullable booleans, manual model addition,
-> per-provider default model selection, and a polished model catalog UI
-> at `/settings/providers/[id]/models`. Real chat streaming, file
-> uploads, reasoning controls, and deployment ship in later prompts.
+> **Status:** Prompt 4 of 10. This commit ships:
+> **live streaming chat backend** on top of the Prompt 3 model catalog.
+> New Supabase tables: `chat_threads`, `chat_messages`,
+> `chat_generation_runs` — all with user-owned RLS policies and
+> indexes. Server-only chat service layer: thread/message/run CRUD,
+> model resolution from catalog, context builder with message/char
+> caps, SSE streaming via EventSource-compatible protocol. Real-time
+> chat UI: workspace, thread sidebar, message list, composer, model
+> selector, and streaming hook. Provider-agnostic: uses existing
+> `provider_connections` and `provider_models`. File uploads, reasoning
+> controls, and deployment ship in later prompts.
 
 ## Stack
 
@@ -128,12 +128,16 @@ openssl rand -base64 32
 
 ### 4. Apply Supabase migrations
 
-The repo ships two local SQL migrations under `supabase/migrations/`:
+The repo ships local SQL migrations under `supabase/migrations/`:
 
 - `20260612000100_initial_profiles.sql` — `public.profiles` + RLS +
   `handle_new_user` trigger
 - `20260612000200_provider_connections.sql` — `provider_connections` +
   `provider_connection_secrets` + RLS
+- `20260612000300_model_discovery.sql` — `provider_models`,
+  `model_capabilities`, `model_discovery_runs`, `model_discovery_events`
+- `20260612000400_chat_backend.sql` — `chat_threads`, `chat_messages`,
+  `chat_generation_runs` + RLS + indexes
 
 Apply them in one of these ways:
 
@@ -159,7 +163,7 @@ Then open:
 - `http://localhost:3000/sign-up` — create an account
 - `http://localhost:3000/sign-in` — sign in
 - `http://localhost:3000/dashboard` — protected dashboard
-- `http://localhost:3000/chat` — protected chat placeholder
+- `http://localhost:3000/chat` — protected live chat workspace
 - `http://localhost:3000/settings` — protected settings
 - `http://localhost:3000/settings/providers` — provider manager
 - `http://localhost:3000/settings/providers/[id]/models` — model catalog
@@ -233,6 +237,56 @@ capability catalog per provider connection.
   returned, never persisted in events. Re-encrypted bytes live only in
   `provider_connection_secrets` (carried over from Prompt 2).
 
+## Live chat backend (Prompt 4)
+
+The `/chat` workspace now connects to real provider models through the
+existing `provider_connections` and `provider_models` catalog.
+
+- **Backend API routes:**
+  - `GET /api/chat/models` — list available chat models from the user's
+    provider connections.
+  - `GET|POST /api/chat/threads` — list threads or create a new one.
+  - `GET|PATCH|DELETE /api/chat/threads/[id]` — fetch, rename/archive, or
+    delete a thread.
+  - `GET /api/chat/threads/[id]/messages` — list messages for a thread.
+  - `POST /api/chat/stream` — send a message and receive SSE-streamed
+    response from the provider.
+- **Streaming:** server-sent events (`text/event-stream`) with events:
+  `thread`, `user_message`, `assistant_message`, `delta`, `done`,
+  `error`, `warning`.
+- **Provider-agnostic:** only `openai-compatible` protocol is implemented.
+  Unsupported protocols return a clear safe error.
+- **Context builder:** caps provider context at 30 messages / 60k chars,
+  oldest dropped first.
+- **Token tracking:** `chat_messages` stores `prompt_tokens`,
+  `completion_tokens`, `total_tokens` per message. `chat_generation_runs`
+  tracks full request metadata including timing, HTTP status, and error
+  type.
+- **Title generation:** deterministic from first message (first 10 words,
+  max 60 chars, markdown stripped).
+- **Generation runs:** status lifecycle: `queued` → `streaming` →
+  `complete` | `error` | `cancelled`.
+- **Client hook:** `useChatStream()` manages thread/message state, model
+  fetching, SSE parsing, abort/cancel, and optimistic local updates.
+
+### New chat tables
+
+| Table | Purpose |
+| --- | --- |
+| `chat_threads` | User-owned conversation threads with title, default model. |
+| `chat_messages` | Individual messages (user/assistant) with role, content, status, token counts. |
+| `chat_generation_runs` | Metadata per generation: timing, HTTP status, provider request ID, error. |
+
+### Environment variables
+
+| Variable | Default | Notes |
+| --- | --- | --- |
+| `CHAT_STREAM_TIMEOUT_MS` | `60000` | HTTP timeout per streaming request. |
+| `CHAT_MAX_INPUT_CHARS` | `20000` | Max message length from the client. |
+| `CHAT_CONTEXT_MAX_MESSAGES` | `30` | Max messages sent to the provider. |
+| `CHAT_CONTEXT_MAX_CHARS` | `60000` | Max total char length for provider context. |
+| `CHAT_DEFAULT_MAX_TOKENS` | `4096` | Default `max_tokens` sent to the provider. |
+
 ## Prompt 1 scope recap
 
 ✅ Built in Prompt 1:
@@ -253,8 +307,7 @@ capability catalog per provider connection.
 
 ⛔ **Not yet built** (deferred):
 
-- Live LLM chat, streaming responses.
-- Model discovery, capability detection, reasoning controls.
+- Reasoning controls (temperature, top_p, frequency/presence penalty UI).
 - File / image upload or Supabase Storage wiring.
 - Usage logging, quotas, billing, or admin tools.
 - Production deployment.

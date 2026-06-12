@@ -52,8 +52,7 @@ export function Sidebar() {
         <div className="rounded-md border border-dashed border-border/60 p-3">
           <div className="font-medium text-foreground">Dirtchat</div>
           <p className="mt-1 leading-relaxed">
-            Provider manager is live. Live chat streaming ships in a later
-            prompt.
+            Provider manager and live chat streaming are active.
           </p>
         </div>
       </div>
