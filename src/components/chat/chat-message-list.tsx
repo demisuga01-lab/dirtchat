@@ -7,11 +7,17 @@ import type { ChatMessage as ChatMessageType } from "@/lib/chat/types";
 interface ChatMessageListProps {
   messages: ChatMessageType[];
   isLoading?: boolean;
+  onCopy?: (content: string) => void;
+  onRegenerate?: (messageId: string) => void;
+  onEdit?: (messageId: string, content: string) => void;
 }
 
 export function ChatMessageList({
   messages,
   isLoading,
+  onCopy,
+  onRegenerate,
+  onEdit,
 }: ChatMessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -19,10 +25,22 @@ export function ChatMessageList({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const lastAssistantIndex = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "assistant" && messages[i].status !== "streaming") {
+        return i;
+      }
+    }
+    return -1;
+  })();
+
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-muted-foreground">Loading messages...</p>
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">Loading messages...</p>
+        </div>
       </div>
     );
   }
@@ -35,7 +53,7 @@ export function ChatMessageList({
             Start a conversation
           </h2>
           <p className="mt-2 text-balance text-sm text-muted-foreground">
-            Send a message below to begin chatting with your AI provider.
+            Send a message below to begin chatting with your provider.
           </p>
         </div>
       </div>
@@ -44,9 +62,16 @@ export function ChatMessageList({
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="divide-y divide-border/30">
-        {messages.map((m) => (
-          <ChatMessage key={m.id} message={m} />
+      <div className="divide-y divide-border/20">
+        {messages.map((m, i) => (
+          <ChatMessage
+            key={m.id}
+            message={m}
+            isLastAssistant={i === lastAssistantIndex}
+            onCopy={onCopy}
+            onRegenerate={onRegenerate}
+            onEdit={onEdit}
+          />
         ))}
       </div>
       <div ref={bottomRef} />

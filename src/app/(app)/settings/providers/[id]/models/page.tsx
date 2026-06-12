@@ -68,8 +68,8 @@ export default async function ProviderModelsPage({
   if (!isConfigured) {
     return (
       <SetupNotice
-        title="Supabase is not configured"
-        description="Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local, then restart the dev server."
+        title="Backend is not configured"
+        description="Set up your environment variables, then restart the dev server."
       />
     );
   }

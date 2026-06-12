@@ -43,7 +43,7 @@ export default async function SettingsPage() {
           <CardHeader>
             <CardTitle>Profile</CardTitle>
             <CardDescription>
-              Your account information from Supabase Auth.
+              Your account information.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 text-sm">
@@ -80,8 +80,8 @@ export default async function SettingsPage() {
               }
             />
             <p className="text-xs text-muted-foreground">
-              Additional preferences (model defaults, reasoning toggle, etc.)
-              arrive in later prompts.
+              More preferences (model defaults, reasoning controls, etc.)
+              are coming soon.
             </p>
           </CardContent>
         </Card>
@@ -94,8 +94,8 @@ export default async function SettingsPage() {
             </div>
             <CardDescription>
               Connect TokenRouter, OpenRouter, or a custom OpenAI-compatible
-              router. Keys are encrypted server-side. Per-provider model
-              discovery and capability detection is available.
+              router. Keys are encrypted at rest. Browse and manage available
+              models per provider.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -71,8 +71,7 @@ export function ConversationSidebar() {
         </ul>
       </div>
       <div className="border-t border-border/60 p-3 text-[11px] text-muted-foreground">
-        Conversation persistence arrives in a later prompt. This list is
-        static for now.
+        Your conversations will appear here once you start chatting.
       </div>
     </aside>
   );

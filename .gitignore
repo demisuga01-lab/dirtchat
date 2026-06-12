@@ -48,6 +48,9 @@ next-env.d.ts
 .continue
 .clinerules
 .windsurfrules
+.agents/
+opencode.json
+skills-lock.json
 
 # editor / OS
 .idea/

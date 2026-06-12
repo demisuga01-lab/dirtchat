@@ -30,13 +30,13 @@ const features = [
     icon: <ImageIcon className="h-5 w-5" />,
     title: "Files and images",
     description:
-      "Drop a PDF, paste a screenshot, or attach a code file. Dirtchat handles the rest through a Supabase-backed workspace.",
+      "Drop a PDF, paste a screenshot, or attach a code file. Dirtchat handles the rest through an integrated workspace.",
   },
   {
     icon: <Lock className="h-5 w-5" />,
-    title: "Supabase auth & storage",
+    title: "Secure auth & storage",
     description:
-      "Server-rendered auth, row-level security, and a clean path to scale. Your data lives in your Supabase project, not ours.",
+      "Built-in authentication, granular permissions, and a clean path to scale. Your data stays with you.",
   },
   {
     icon: <Activity className="h-5 w-5" />,

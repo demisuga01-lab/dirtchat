@@ -42,7 +42,7 @@ export function ChatPlaceholder() {
         </div>
         <Badge variant="outline" className="gap-1.5">
           <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-success" />
-          Foundation build
+          Preview
         </Badge>
       </div>
 
@@ -55,9 +55,8 @@ export function ChatPlaceholder() {
             Your quiet AI workspace
           </h2>
           <p className="mt-2 text-balance text-sm text-muted-foreground">
-            The chat surface is wired up and ready, but the live model backend
-            is intentionally not connected yet. Sending a message will show a
-            placeholder notice.
+            This is a preview of the workspace. Connect a provider to start
+            chatting with live models.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
             <Badge variant="outline">Streaming</Badge>
@@ -79,7 +78,7 @@ export function ChatPlaceholder() {
             size="icon"
             disabled
             aria-disabled
-            title="File upload arrives in a later prompt"
+            title="File upload coming soon"
           >
             <Paperclip className="h-4 w-4" />
           </Button>
@@ -92,7 +91,7 @@ export function ChatPlaceholder() {
               rows={1}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Ask anything. (Backend arrives in Prompt 4.)"
+              placeholder="Connect a provider to start chatting."
               className={cn(
                 "w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm",
                 "placeholder:text-muted-foreground",
@@ -106,8 +105,7 @@ export function ChatPlaceholder() {
           </Button>
         </form>
         <p className="mx-auto mt-2 max-w-3xl text-center text-[11px] text-muted-foreground">
-          Chat backend will be added in Prompt 4. The send button is disabled
-          on purpose.
+          Add a provider in Settings to enable messaging.
         </p>
       </div>
     </div>

@@ -9,17 +9,18 @@ Dirtchat is being built as a multi-model AI chat product. It is a
 layer that supports TokenRouter, OpenRouter, OpenAI, Anthropic, and
 self-hosted OpenAI-compatible endpoints.
 
-> **Status:** Prompt 4 of 10. This commit ships:
-> **live streaming chat backend** on top of the Prompt 3 model catalog.
-> New Supabase tables: `chat_threads`, `chat_messages`,
-> `chat_generation_runs` — all with user-owned RLS policies and
-> indexes. Server-only chat service layer: thread/message/run CRUD,
-> model resolution from catalog, context builder with message/char
-> caps, SSE streaming via EventSource-compatible protocol. Real-time
-> chat UI: workspace, thread sidebar, message list, composer, model
-> selector, and streaming hook. Provider-agnostic: uses existing
-> `provider_connections` and `provider_models`. File uploads, reasoning
-> controls, and deployment ship in later prompts.
+> **Status:** Prompt 5 of 10. This commit ships:
+> **premium conversation UX** on top of the Prompt 4 streaming chat backend.
+> Message actions: copy-to-clipboard, regenerate (new assistant message),
+> edit-and-resend (new user + assistant pair, history preserved). Safe
+> markdown-like content renderer with fenced code blocks (language label,
+> copy button, inline code support — no `dangerouslySetInnerHTML`).
+> Thread sidebar: search/filter by title, pin/unpin, archive, delete
+> with confirmation. Composer: autosizing textarea (max 200px),
+> character count with warning near limit, edit mode with inline cancel.
+> Keyboard shortcuts: Ctrl+N new thread, Ctrl+K focus sidebar search,
+> Esc cancel edit. Provider-agnostic — no hardcoded model/vendor.
+> File uploads, reasoning controls, and deployment ship in later prompts.
 
 ## Stack
 
@@ -57,7 +58,7 @@ self-hosted OpenAI-compatible endpoints.
 │   ├── components/
 │   │   ├── app/                 # App shell, sidebar, theme toggle
 │   │   ├── auth/                # Sign-in / sign-up / sign-out forms
-│   │   ├── chat/                # Conversation sidebar, chat placeholder
+│   │   ├── chat/                # Conversation sidebar, message list, composer
 │   │   ├── marketing/           # Landing page sections
 │   │   ├── providers/           # Theme + provider-manager
 │   │   └── ui/                  # Button, card, input, label, badge, toaster
@@ -286,6 +287,46 @@ existing `provider_connections` and `provider_models` catalog.
 | `CHAT_CONTEXT_MAX_MESSAGES` | `30` | Max messages sent to the provider. |
 | `CHAT_CONTEXT_MAX_CHARS` | `60000` | Max total char length for provider context. |
 | `CHAT_DEFAULT_MAX_TOKENS` | `4096` | Default `max_tokens` sent to the provider. |
+
+## Premium chat UX (Prompt 5)
+
+The `/chat` workspace now includes message actions, a safe content renderer,
+and a polished thread sidebar.
+
+- **Message actions:** each assistant message has a copy button (copies
+  content to clipboard) and a regenerate button on the last assistant
+  message (creates a new response while preserving the old one). User
+  messages have an edit button that opens the composer in edit mode.
+- **Edit-and-resend:** creates a new user message (with
+  `safe_metadata.action: "edit_and_resend"` and
+  `edited_from_message_id`) followed by a new assistant response. The
+  original user message and old response are preserved in the thread
+  history — no destructive deletion.
+- **Regenerate:** creates a new assistant message (with
+  `safe_metadata.action: "regenerate"`,
+  `regenerated_from_message_id`, and `regeneration_index`). Previous
+  assistant response remains in the history with a "Regenerated" badge.
+- **Safe content renderer** (`chat-message-content.tsx`): lightweight
+  custom renderer for markdown-like content. Supports fenced code blocks
+  (language label + copy button), inline code (single backticks), and
+  plain paragraph text. No `dangerouslySetInnerHTML` or external
+  markdown dependencies.
+- **Error recovery:** assistant messages with `status: "error"` show a
+  retry button and the error message text.
+- **Composer:** `textarea` auto-sizes up to 200px, character count
+  displayed (warning color near `CHAT_MAX_INPUT_CHARS` limit),
+  edit mode pre-fills the textarea and shows a cancel button. Esc key
+  cancels edit mode. Buttons are disabled during streaming; a stop
+  button replaces send while streaming.
+- **Thread sidebar:** search/filter by title (Ctrl+K to focus), pinned
+  section at the top with separator, context menu per thread (rename,
+  pin/unpin, archive, delete with Yes/No confirmation).
+- **Keyboard shortcuts:** Ctrl+N to create a new thread, Ctrl+K to
+  focus sidebar search, Esc to cancel edit or close menus.
+- **Schema reuse:** no new database tables or columns. All metadata
+  (action type, linked message IDs) stored in the existing
+  `safe_metadata` JSONB column on `chat_messages`. The existing
+  `parent_message_id` column links edited user messages to their origin.
 
 ## Prompt 1 scope recap
 

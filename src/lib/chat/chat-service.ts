@@ -186,6 +186,97 @@ export async function deleteThread(
   }
 }
 
+export async function getMessage(
+  userId: string,
+  messageId: string
+): Promise<ChatMessage> {
+  const supabase = await createUserClient();
+  const { data, error } = await supabase
+    .from("chat_messages")
+    .select("*")
+    .eq("id", messageId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error || !data) {
+    throw new NotFoundError("Message not found.");
+  }
+  return data as ChatMessage;
+}
+
+export async function createEditedUserMessage(
+  userId: string,
+  threadId: string,
+  originalMessageId: string,
+  newContent: string
+): Promise<ChatMessage> {
+  const sequence = await getNextSequence(threadId);
+  const supabase = await createUserClient();
+  const { data, error } = await supabase
+    .from("chat_messages")
+    .insert({
+      thread_id: threadId,
+      user_id: userId,
+      role: "user",
+      content: newContent,
+      status: "complete",
+      sequence,
+      parent_message_id: originalMessageId,
+      safe_metadata: {
+        edited_from_message_id: originalMessageId,
+        action: "edit_and_resend",
+      },
+    })
+    .select("*")
+    .single();
+  if (error || !data) {
+    throw new Error(`Could not save edited message: ${safeErrorMessage(error)}`);
+  }
+  return data as ChatMessage;
+}
+
+export async function createRegenerationPlaceholder(
+  userId: string,
+  threadId: string,
+  opts: {
+    providerConnectionId?: string;
+    providerModelId?: string;
+    modelId?: string;
+    parentMessageId?: string | null;
+    regeneratedFromMessageId?: string;
+    regenerationIndex?: number;
+  }
+): Promise<ChatMessage> {
+  const sequence = await getNextSequence(threadId);
+  const supabase = await createUserClient();
+  const { data, error } = await supabase
+    .from("chat_messages")
+    .insert({
+      thread_id: threadId,
+      user_id: userId,
+      role: "assistant",
+      content: "",
+      status: "streaming",
+      sequence,
+      parent_message_id: opts.parentMessageId ?? null,
+      provider_connection_id: opts.providerConnectionId ?? null,
+      provider_model_id: opts.providerModelId ?? null,
+      model_id: opts.modelId ?? null,
+      safe_metadata: {
+        regenerated_from_message_id: opts.regeneratedFromMessageId,
+        regeneration_index: opts.regenerationIndex ?? 1,
+        action: "regenerate",
+      },
+    })
+    .select("*")
+    .single();
+  if (error || !data) {
+    throw new Error(
+      `Could not create regeneration: ${safeErrorMessage(error)}`
+    );
+  }
+  return data as ChatMessage;
+}
+
 export async function listMessages(
   userId: string,
   threadId: string

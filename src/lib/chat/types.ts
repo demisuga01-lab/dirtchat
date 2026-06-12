@@ -110,6 +110,9 @@ export interface StreamRequest {
   modelId?: string;
   temperature?: number;
   maxTokens?: number;
+  action?: "normal" | "regenerate" | "edit";
+  originalUserMessageId?: string;
+  assistantMessageId?: string;
 }
 
 export interface StreamEvent {

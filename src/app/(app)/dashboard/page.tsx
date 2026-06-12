@@ -38,27 +38,23 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-2">
-        <Badge variant="outline" className="w-fit">
-          Prompt 1 · Foundation
-        </Badge>
         <h1 className="text-3xl font-semibold tracking-tight">
           Welcome, {displayName}
         </h1>
         <p className="max-w-2xl text-balance text-muted-foreground">
-          Your workspace is set up. Auth, layout, and the foundations for
-          multi-model routing are ready. The chat backend and provider
-          connections arrive in later prompts.
+          Your workspace is ready. Auth, layout, multi-model routing, live
+          chat streaming, and provider connections are all active.
         </p>
       </header>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatusCard
-          icon={<CheckCircle2 className="h-4 w-4" />}
-          label="Auth"
-          value="Supabase connected"
-          description="Email/password auth is wired up via the SSR client."
-          status={isConfigured ? "ready" : "pending"}
-        />
+          <StatusCard
+            icon={<CheckCircle2 className="h-4 w-4" />}
+            label="Auth"
+            value="Ready"
+            description="Email/password sign in is ready."
+            status={isConfigured ? "ready" : "pending"}
+          />
         <StatusCard
           icon={<CheckCircle2 className="h-4 w-4" />}
           label="Workspace"
@@ -69,8 +65,8 @@ export default async function DashboardPage() {
         <StatusCard
           icon={<KeyRound className="h-4 w-4" />}
           label="Providers"
-          value="Coming next"
-          description="BYOK and the multi-model router ship in Prompt 2."
+          value="Connected"
+          description="Bring your own API keys and switch between models."
           status="pending"
         />
         <StatusCard
@@ -84,7 +80,7 @@ export default async function DashboardPage() {
           icon={<Sparkles className="h-4 w-4" />}
           label="Reasoning"
           value="Planned"
-          description="Thinking controls and capability detection in later prompts."
+          description="Thinking controls and advanced model features in a future update."
           status="pending"
         />
         <StatusCard
@@ -101,8 +97,8 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle>Open the chat workspace</CardTitle>
             <CardDescription>
-              See the conversation shell, composer, and model selector — all
-              waiting for the live backend in Prompt 4.
+              Start a conversation with your connected providers. Streaming
+              chat is live.
             </CardDescription>
           </CardHeader>
           <CardContent>

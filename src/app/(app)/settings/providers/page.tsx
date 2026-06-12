@@ -31,7 +31,7 @@ export default async function ProvidersPage() {
           <h1 className="text-3xl font-semibold tracking-tight">Providers</h1>
         </div>
         <p className="max-w-2xl text-muted-foreground">
-          Connect your own model routers. Secrets are encrypted server-side
+          Connect your own model routers. Secrets are encrypted
           and never shown again.
         </p>
       </header>
@@ -42,8 +42,7 @@ export default async function ProvidersPage() {
             <ShieldCheck className="h-3.5 w-3.5" /> Encrypted at rest
           </div>
           <p className="mt-1.5 text-sm text-foreground">
-            API keys are encrypted with AES-256-GCM using a server-only key
-            (<code className="rounded bg-muted px-1 py-0.5">PROVIDER_KEY_ENCRYPTION_KEY</code>).
+            API keys are encrypted at rest using a server-only key.
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">

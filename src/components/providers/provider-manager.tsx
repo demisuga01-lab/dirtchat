@@ -603,7 +603,7 @@ export function ProviderManager() {
                 </button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Encrypted server-side. Never displayed again after save.
+                Encrypted. Never displayed again after save.
               </p>
             </div>
 
@@ -689,7 +689,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <div>
         <h3 className="text-sm font-semibold">No providers yet</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Connect TokenRouter to use MiniMax-M3 in a later prompt, or add
+          Connect TokenRouter to use MiniMax-M3, or add
           OpenRouter / a custom OpenAI-compatible endpoint.
         </p>
       </div>

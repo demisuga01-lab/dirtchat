@@ -41,9 +41,7 @@ export function useChatStream() {
     try {
       const [threadRes, msgRes] = await Promise.all([
         fetch(`/api/chat/threads/${encodeURIComponent(threadId)}`),
-        fetch(
-          `/api/chat/threads/${encodeURIComponent(threadId)}/messages`
-        ),
+        fetch(`/api/chat/threads/${encodeURIComponent(threadId)}/messages`),
       ]);
       if (!threadRes.ok || !msgRes.ok) return;
       const threadJson = await threadRes.json();
@@ -87,14 +85,11 @@ export function useChatStream() {
   const renameThread = useCallback(
     async (threadId: string, title: string) => {
       try {
-        await fetch(
-          `/api/chat/threads/${encodeURIComponent(threadId)}`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title }),
-          }
-        );
+        await fetch(`/api/chat/threads/${encodeURIComponent(threadId)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title }),
+        });
       } catch {
         // silently fail
       }
@@ -102,139 +97,71 @@ export function useChatStream() {
     []
   );
 
-  const deleteThread = useCallback(async (threadId: string) => {
-    try {
-      await fetch(
-        `/api/chat/threads/${encodeURIComponent(threadId)}`,
-        { method: "DELETE" }
-      );
-      if (thread?.id === threadId) {
-        setThread(null);
-        setMessages([]);
+  const deleteThread = useCallback(
+    async (threadId: string) => {
+      try {
+        await fetch(`/api/chat/threads/${encodeURIComponent(threadId)}`, {
+          method: "DELETE",
+        });
+        if (thread?.id === threadId) {
+          setThread(null);
+          setMessages([]);
+        }
+      } catch {
+        // silently fail
       }
-    } catch {
-      // silently fail
-    }
-  }, [thread?.id]);
+    },
+    [thread?.id]
+  );
 
-  const archiveThread = useCallback(async (threadId: string) => {
-    try {
-      await fetch(
-        `/api/chat/threads/${encodeURIComponent(threadId)}`,
-        {
+  const archiveThread = useCallback(
+    async (threadId: string) => {
+      try {
+        await fetch(`/api/chat/threads/${encodeURIComponent(threadId)}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ is_archived: true }),
+        });
+        if (thread?.id === threadId) {
+          setThread(null);
+          setMessages([]);
         }
-      );
-      if (thread?.id === threadId) {
-        setThread(null);
-        setMessages([]);
+      } catch {
+        // silently fail
       }
-    } catch {
-      // silently fail
-    }
-  }, [thread?.id]);
+    },
+    [thread?.id]
+  );
 
-  const sendMessage = useCallback(
-    async (opts: StreamRequest) => {
-      if (isStreaming) return;
-      setError(null);
-      setIsStreaming(true);
+  const pinThread = useCallback(
+    async (threadId: string, pinned: boolean) => {
+      try {
+        await fetch(`/api/chat/threads/${encodeURIComponent(threadId)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_pinned: pinned }),
+        });
+        if (thread?.id === threadId) {
+          setThread((prev) => (prev ? { ...prev, is_pinned: pinned } : prev));
+        }
+      } catch {
+        // silently fail
+      }
+    },
+    [thread?.id]
+  );
 
-      abortRef.current = new AbortController();
+  function streamSSE(
+    reader: ReadableStreamDefaultReader<Uint8Array>,
+    userMsg: ChatMessage,
+    assistantMsg: ChatMessage
+  ): Promise<void> {
+    return new Promise<void>(async (resolve) => {
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let assistantId = assistantMsg.id;
 
       try {
-        const userMsg: ChatMessage = {
-          id: `temp-${Date.now()}`,
-          thread_id: opts.threadId ?? thread?.id ?? "",
-          user_id: "",
-          role: "user",
-          content: opts.message,
-          status: "complete",
-          sequence: messages.length + 1,
-          parent_message_id: null,
-          provider_connection_id: null,
-          provider_model_id: null,
-          model_id: null,
-          prompt_tokens: null,
-          completion_tokens: null,
-          total_tokens: null,
-          safe_error: null,
-          safe_metadata: {},
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          completed_at: new Date().toISOString(),
-        };
-        setMessages((prev) => [...prev, userMsg]);
-
-        const assistantMsg: ChatMessage = {
-          id: `temp-assistant-${Date.now()}`,
-          thread_id: opts.threadId ?? thread?.id ?? "",
-          user_id: "",
-          role: "assistant",
-          content: "",
-          status: "streaming",
-          sequence: messages.length + 2,
-          parent_message_id: null,
-          provider_connection_id: null,
-          provider_model_id: null,
-          model_id: null,
-          prompt_tokens: null,
-          completion_tokens: null,
-          total_tokens: null,
-          safe_error: null,
-          safe_metadata: {},
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          completed_at: null,
-        };
-        setMessages((prev) => [...prev, assistantMsg]);
-
-        const res = await fetch("/api/chat/stream", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            threadId: opts.threadId,
-            message: opts.message,
-            providerConnectionId: opts.providerConnectionId,
-            providerModelId: opts.providerModelId,
-            modelId: opts.modelId,
-            temperature: opts.temperature,
-            maxTokens: opts.maxTokens,
-          }),
-          signal: abortRef.current.signal,
-        });
-
-        if (!res.ok) {
-          let errMsg = "Stream request failed.";
-          try {
-            const errJson = await res.json();
-            if (errJson.error) errMsg = errJson.error;
-          } catch {}
-          setError(errMsg);
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantMsg.id
-                ? { ...m, status: "error", safe_error: errMsg }
-                : m
-            )
-          );
-          setIsStreaming(false);
-          return;
-        }
-
-        const reader = res.body?.getReader();
-        if (!reader) {
-          setError("No response stream.");
-          setIsStreaming(false);
-          return;
-        }
-
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let assistantId = assistantMsg.id;
-
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -255,32 +182,29 @@ export function useChatStream() {
             } catch {}
 
             if (event === "thread" && data.thread) {
-              const t = data.thread as ChatThread;
-              setThread(t);
+              setThread(data.thread as ChatThread);
             }
 
             if (event === "user_message" && data.message) {
               const m = data.message as ChatMessage;
-              setMessages((prev) =>
-                prev.map((p) => (p.id === userMsg.id ? m : p))
-              );
+              setMessages((prev) => prev.map((p) => (p.id === userMsg.id ? m : p)));
             }
 
             if (event === "assistant_message" && data.message) {
               const m = data.message as ChatMessage;
               assistantId = m.id;
-              setMessages((prev) =>
-                prev.map((p) =>
-                  p.id === assistantMsg.id ? m : p.id === assistantId ? m : p
-                )
-              );
+              setMessages((prev) => {
+                const exists = prev.some((p) => p.id === m.id);
+                if (exists) return prev.map((p) => (p.id === m.id ? m : p));
+                return prev.map((p) => (p.id === assistantMsg.id ? m : p));
+              });
             }
 
             if (event === "delta" && typeof data.content === "string") {
               setMessages((prev) =>
                 prev.map((p) =>
                   p.id === assistantId
-                    ? { ...p, content: p.content + data.content }
+                    ? { ...p, content: p.content + (data.content as string) }
                     : p
                 )
               );
@@ -298,6 +222,118 @@ export function useChatStream() {
             }
           }
         }
+      } catch {
+        // stream error handled externally
+      }
+      resolve();
+    });
+  }
+
+  const sendMessage = useCallback(
+    async (opts: StreamRequest) => {
+      if (isStreaming) return;
+      setError(null);
+      setIsStreaming(true);
+
+      abortRef.current = new AbortController();
+
+      const tempId = `temp-${Date.now()}`;
+      const tempAssistantId = `temp-assistant-${Date.now()}`;
+      const now = new Date().toISOString();
+
+      const userMsg: ChatMessage = {
+        id: tempId,
+        thread_id: opts.threadId ?? thread?.id ?? "",
+        user_id: "",
+        role: "user",
+        content: opts.message,
+        status: "complete",
+        sequence: messages.length + 1,
+        parent_message_id: null,
+        provider_connection_id: null,
+        provider_model_id: null,
+        model_id: null,
+        prompt_tokens: null,
+        completion_tokens: null,
+        total_tokens: null,
+        safe_error: null,
+        safe_metadata: {},
+        created_at: now,
+        updated_at: now,
+        completed_at: now,
+      };
+
+      const assistantMsg: ChatMessage = {
+        id: tempAssistantId,
+        thread_id: opts.threadId ?? thread?.id ?? "",
+        user_id: "",
+        role: "assistant",
+        content: "",
+        status: "streaming",
+        sequence: messages.length + 2,
+        parent_message_id: null,
+        provider_connection_id: null,
+        provider_model_id: null,
+        model_id: null,
+        prompt_tokens: null,
+        completion_tokens: null,
+        total_tokens: null,
+        safe_error: null,
+        safe_metadata: {},
+        created_at: now,
+        updated_at: now,
+        completed_at: null,
+      };
+
+      setMessages((prev) => [...prev, userMsg, assistantMsg]);
+
+      try {
+        const body: Record<string, unknown> = {
+          threadId: opts.threadId,
+          message: opts.message,
+          providerConnectionId: opts.providerConnectionId,
+          providerModelId: opts.providerModelId,
+          modelId: opts.modelId,
+          temperature: opts.temperature,
+          maxTokens: opts.maxTokens,
+          action: opts.action ?? "normal",
+        };
+        if (opts.originalUserMessageId) body.originalUserMessageId = opts.originalUserMessageId;
+        if (opts.assistantMessageId) body.assistantMessageId = opts.assistantMessageId;
+
+        const res = await fetch("/api/chat/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: abortRef.current.signal,
+        });
+
+        if (!res.ok) {
+          let errMsg = "Stream request failed.";
+          try {
+            const errJson = await res.json();
+            if (errJson.error) errMsg = errJson.error;
+          } catch {}
+          setError(errMsg);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === tempAssistantId
+                ? { ...m, status: "error", safe_error: errMsg }
+                : m
+            )
+          );
+          setIsStreaming(false);
+          return;
+        }
+
+        const reader = res.body?.getReader();
+        if (!reader) {
+          setError("No response stream.");
+          setIsStreaming(false);
+          return;
+        }
+
+        await streamSSE(reader, userMsg, assistantMsg);
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") {
           setMessages((prev) =>
@@ -306,13 +342,12 @@ export function useChatStream() {
             )
           );
         } else {
-          setError(
-            err instanceof Error ? err.message : "Stream failed."
-          );
+          const msg = err instanceof Error ? err.message : "Stream failed.";
+          setError(msg);
           setMessages((prev) =>
             prev.map((m) =>
               m.status === "streaming"
-                ? { ...m, status: "error", safe_error: "Stream failed." }
+                ? { ...m, status: "error", safe_error: msg }
                 : m
             )
           );
@@ -332,16 +367,131 @@ export function useChatStream() {
     }
   }, []);
 
-  const selectModel = useCallback(
-    (modelOption: ChatModelOption) => {
-      // store in a ref or state for next send
-      return {
-        providerConnectionId: modelOption.provider_connection_id,
-        providerModelId: modelOption.provider_model_id,
-        modelId: modelOption.model_id,
+  const regenerate = useCallback(
+    async (opts: {
+      threadId: string;
+      providerConnectionId?: string;
+      providerModelId?: string;
+      modelId?: string;
+    }) => {
+      if (isStreaming) return;
+      setError(null);
+      setIsStreaming(true);
+      abortRef.current = new AbortController();
+
+      const tempAssistantId = `temp-regenerate-${Date.now()}`;
+      const now = new Date().toISOString();
+
+      const placeholderMsg: ChatMessage = {
+        id: tempAssistantId,
+        thread_id: opts.threadId,
+        user_id: "",
+        role: "assistant",
+        content: "",
+        status: "streaming",
+        sequence: messages.length + 1,
+        parent_message_id: null,
+        provider_connection_id: null,
+        provider_model_id: null,
+        model_id: null,
+        prompt_tokens: null,
+        completion_tokens: null,
+        total_tokens: null,
+        safe_error: null,
+        safe_metadata: {},
+        created_at: now,
+        updated_at: now,
+        completed_at: null,
       };
+
+      setMessages((prev) => [...prev, placeholderMsg]);
+
+      try {
+        const res = await fetch("/api/chat/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            threadId: opts.threadId,
+            action: "regenerate",
+            providerConnectionId: opts.providerConnectionId,
+            providerModelId: opts.providerModelId,
+            modelId: opts.modelId,
+          }),
+          signal: abortRef.current.signal,
+        });
+
+        if (!res.ok) {
+          let errMsg = "Regeneration failed.";
+          try {
+            const errJson = await res.json();
+            if (errJson.error) errMsg = errJson.error;
+          } catch {}
+          setError(errMsg);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === tempAssistantId
+                ? { ...m, status: "error", safe_error: errMsg }
+                : m
+            )
+          );
+          setIsStreaming(false);
+          return;
+        }
+
+        const reader = res.body?.getReader();
+        if (!reader) {
+          setError("No response stream.");
+          setIsStreaming(false);
+          return;
+        }
+
+        await streamSSE(reader, { id: "", content: "", role: "user", status: "complete", sequence: 0, thread_id: opts.threadId, user_id: "", parent_message_id: null, provider_connection_id: null, provider_model_id: null, model_id: null, prompt_tokens: null, completion_tokens: null, total_tokens: null, safe_error: null, safe_metadata: {}, created_at: now, updated_at: now, completed_at: now } as ChatMessage, placeholderMsg);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.status === "streaming" ? { ...m, status: "cancelled" } : m
+            )
+          );
+        } else {
+          setError(err instanceof Error ? err.message : "Regeneration failed.");
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.status === "streaming"
+                ? { ...m, status: "error", safe_error: "Regeneration failed." }
+                : m
+            )
+          );
+        }
+      } finally {
+        setIsStreaming(false);
+        abortRef.current = null;
+      }
     },
-    []
+    [isStreaming, messages]
+  );
+
+  const editAndResend = useCallback(
+    async (opts: {
+      threadId: string;
+      originalUserMessageId: string;
+      editedContent: string;
+      providerConnectionId?: string;
+      providerModelId?: string;
+      modelId?: string;
+    }) => {
+      if (isStreaming) return;
+      return sendMessage({
+        threadId: opts.threadId,
+        message: opts.editedContent,
+        providerConnectionId: opts.providerConnectionId,
+        providerModelId: opts.providerModelId,
+        modelId: opts.modelId,
+        action: "edit",
+        originalUserMessageId: opts.originalUserMessageId,
+      });
+    },
+    [sendMessage, isStreaming]
   );
 
   return {
@@ -357,8 +507,10 @@ export function useChatStream() {
     renameThread,
     deleteThread,
     archiveThread,
+    pinThread,
     sendMessage,
     cancelStream,
-    selectModel,
+    regenerate,
+    editAndResend,
   };
 }
