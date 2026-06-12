@@ -25,15 +25,10 @@ export default async function SignInPage() {
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-background">
-      {/* Dot grid background pattern */}
+      {/* Subtle clean background glow */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, hsl(var(--muted-foreground) / 0.07) 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
-        }}
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,hsl(var(--success)/0.03),transparent_70%)]"
       />
 
       <header className="flex h-14 items-center justify-between border-b border-border/60 bg-background/70 px-6 backdrop-blur-sm">

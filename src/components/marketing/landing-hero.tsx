@@ -1,6 +1,6 @@
 import { ArrowRight, MessageSquare, Layers, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ModelConstellation } from "@/components/marketing/model-constellation";
+import { ProductPreview } from "@/components/marketing/product-preview";
 
 export function LandingHero() {
   return (
@@ -10,15 +10,15 @@ export function LandingHero() {
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.05),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.12),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--success)/0.03),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top,hsl(var(--success)/0.07),transparent_50%)]" />
       </div>
 
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-16 text-center sm:py-24">
         <div className="animate-fade-in-up">
-          <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-[-0.02em] sm:text-6xl md:text-7xl">
+          <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-[-0.02em] text-foreground sm:text-6xl md:text-7xl">
             One workspace for
             <br className="hidden sm:block" />
-            <span className="bg-gradient-to-r from-[#6366f1] to-[#a78bfa] bg-clip-text text-transparent">
+            <span className="text-success">
               every serious model.
             </span>
           </h1>
@@ -39,9 +39,9 @@ export function LandingHero() {
           </Button>
         </div>
 
-        {/* Model routing constellation — the unique Dirtchat visual */}
+        {/* Composed Product UI Mockup */}
         <div className="animate-fade-in-up animate-delay-300 mt-12 w-full sm:mt-16">
-          <ModelConstellation className="opacity-90 transition-opacity hover:opacity-100" />
+          <ProductPreview />
         </div>
 
         <p className="animate-fade-in animate-delay-300 mt-6 max-w-md text-xs text-muted-foreground">
@@ -81,7 +81,7 @@ function HeroStat({
   value: string;
 }) {
   return (
-    <div className="flex h-full flex-col gap-2 rounded-xl border border-border/70 bg-card/40 p-5 backdrop-blur transition-colors hover:border-[#6366f1]/40">
+    <div className="flex h-full flex-col gap-2 rounded-xl border border-border/70 bg-card/40 p-5 backdrop-blur transition-colors hover:border-success/40">
       <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
         {icon}
         {label}

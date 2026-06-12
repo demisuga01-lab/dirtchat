@@ -9,13 +9,13 @@ Dirtchat is being built as a multi-model AI chat product. It is a
 layer that supports TokenRouter, OpenRouter, OpenAI, Anthropic, and
 self-hosted OpenAI-compatible endpoints.
 
-> **Status:** Prompt 6 of 10. This commit ships:
-> **full auth & brand rebuild** — original Dirtchat logo (chat-bubble D with
-> model-routing line), model routing constellation on the landing page,
-> polished auth forms with specific env-var messaging and OTP resend cooldown,
-> accept-terms with sign-out escape, dot-grid backgrounds, glassmorphism,
-> security advisor fixes (revoked public SECURITY DEFINER functions, tightened
-> avatars bucket listing, fixed mutable search_path), and Stitch design system.
+> **Status:** Redesigned theme using true black backgrounds, crisp white text,
+> and a restrained light-green accent system. Rebuilt the brand logo and mark
+> with structured geometric routing lines. Replaced the landing hero constellation
+> with a premium dual-pane chat workspace mockup. Rebuilt the sign-up page to
+> always render checkboxes with a dynamic validation checklist and logic-level
+> database validation of terms/privacy acceptance before sign-up. Removed all
+> dot-grid backgrounds, purple gradients, and glassmorphic branding.
 
 ## Stack
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, MessageSquare, Settings, KeyRound } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DirtchatLogo } from "@/components/brand/dirtchat-logo";
 
 const items = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -41,10 +42,7 @@ export function MobileNav({
       />
       <nav className="absolute inset-y-0 left-0 flex w-64 flex-col gap-1 border-r border-border/60 bg-background p-3">
         <div className="mb-2 flex h-10 items-center gap-2 px-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
-            D
-          </div>
-          <span className="text-sm font-semibold">Dirtchat</span>
+          <DirtchatLogo size="sm" showWordmark />
         </div>
         {items.map((item) => {
           const Icon = item.icon;

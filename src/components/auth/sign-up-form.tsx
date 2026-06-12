@@ -32,8 +32,12 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
 
   const termsDoc = legalDocs.find((d) => d.document_type === "terms_of_service");
   const privacyDoc = legalDocs.find((d) => d.document_type === "privacy_policy");
-  const passwordMismatch = password && confirmPassword && password !== confirmPassword;
-  const canSubmit = acceptedTerms && acceptedPrivacy && !passwordMismatch && password.length >= 6;
+  const emailValid = email.includes("@");
+  const passwordLengthValid = password.length >= 6;
+  const passwordsMatch = password === confirmPassword;
+  const passwordMismatch = password && confirmPassword && !passwordsMatch;
+
+  const canSubmit = acceptedTerms && acceptedPrivacy && passwordsMatch && passwordLengthValid && emailValid;
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,17 +45,30 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
       setError("Supabase environment is not configured.");
       return;
     }
-    if (password !== confirmPassword) {
+    if (!emailValid) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (!passwordLengthValid) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    if (!passwordsMatch) {
       setError("Passwords do not match.");
       return;
     }
+    if (!acceptedTerms || !acceptedPrivacy) {
+      setError("You must accept both the Terms of Service and Privacy Policy.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setInfo(null);
     try {
       const acceptedIds: string[] = [];
-      if (acceptedTerms && termsDoc) acceptedIds.push(termsDoc.id);
-      if (acceptedPrivacy && privacyDoc) acceptedIds.push(privacyDoc.id);
+      if (termsDoc) acceptedIds.push(termsDoc.id);
+      if (privacyDoc) acceptedIds.push(privacyDoc.id);
 
       const res = await fetch("/api/auth/sign-up", {
         method: "POST",
@@ -89,7 +106,7 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+    <form onSubmit={onSubmit} className="flex flex-col gap-4.5" noValidate>
       {!isConfigured ? (
         <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
           {configState.status === "missing"
@@ -97,6 +114,7 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
             : `Demo placeholder keys detected in: ${(configState as { demo: string[] }).demo.join(", ")}. Replace them with real values in .env.local and restart the dev server.`}
         </div>
       ) : null}
+
       <div className="flex flex-col gap-2">
         <Label htmlFor="display-name">Display name</Label>
         <Input
@@ -110,6 +128,7 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           disabled={!isConfigured || loading}
         />
       </div>
+
       <div className="flex flex-col gap-2">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -124,6 +143,7 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           disabled={!isConfigured || loading}
         />
       </div>
+
       <div className="flex flex-col gap-2">
         <Label htmlFor="password">Password</Label>
         <Input
@@ -132,13 +152,13 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           type="password"
           autoComplete="new-password"
           required
-          minLength={6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="At least 6 characters"
           disabled={!isConfigured || loading}
         />
       </div>
+
       <div className="flex flex-col gap-2">
         <Label htmlFor="confirm-password">Confirm password</Label>
         <Input
@@ -147,7 +167,6 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           type="password"
           autoComplete="new-password"
           required
-          minLength={6}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="Re-enter your password"
@@ -158,85 +177,113 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
         ) : null}
       </div>
 
-      {/* Legal acceptance checkboxes */}
-      {termsDoc ? (
-        <label className="flex items-start gap-3 rounded-md border border-border p-3 cursor-pointer hover:bg-muted/30 transition-colors">
+      {/* Legal acceptance checkboxes — always rendered */}
+      <div className="flex flex-col gap-3">
+        <label className="flex items-start gap-3 rounded-md border border-border p-3 cursor-pointer hover:bg-muted/20 transition-colors">
           <input
             type="checkbox"
             checked={acceptedTerms}
             onChange={(e) => setAcceptedTerms(e.target.checked)}
             disabled={loading}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-success focus:ring-success accent-success"
           />
-          <span className="text-sm text-muted-foreground leading-relaxed">
+          <span className="text-xs text-muted-foreground leading-relaxed">
             I have read and agree to the{" "}
             <Link
               href="/terms"
               target="_blank"
-              className="font-medium text-foreground underline-offset-4 hover:underline"
+              className="font-medium text-foreground underline underline-offset-4 hover:text-success"
             >
               Terms of Service
             </Link>
           </span>
         </label>
-      ) : null}
 
-      {privacyDoc ? (
-        <label className="flex items-start gap-3 rounded-md border border-border p-3 cursor-pointer hover:bg-muted/30 transition-colors">
+        <label className="flex items-start gap-3 rounded-md border border-border p-3 cursor-pointer hover:bg-muted/20 transition-colors">
           <input
             type="checkbox"
             checked={acceptedPrivacy}
             onChange={(e) => setAcceptedPrivacy(e.target.checked)}
             disabled={loading}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-success focus:ring-success accent-success"
           />
-          <span className="text-sm text-muted-foreground leading-relaxed">
+          <span className="text-xs text-muted-foreground leading-relaxed">
             I have read and agree to the{" "}
             <Link
               href="/privacy"
               target="_blank"
-              className="font-medium text-foreground underline-offset-4 hover:underline"
+              className="font-medium text-foreground underline underline-offset-4 hover:text-success"
             >
               Privacy Policy
             </Link>
           </span>
         </label>
-      ) : null}
+      </div>
 
       {error ? (
         <p
           role="alert"
-          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive animate-fade-in"
         >
           {error}
         </p>
       ) : null}
+
       {info ? (
         <p
           role="status"
-          className="rounded-md border border-border bg-muted/40 p-3 text-sm text-foreground"
+          className="rounded-md border border-border bg-muted/40 p-3 text-sm text-foreground animate-fade-in"
         >
           {info}
         </p>
       ) : null}
-      <Button type="submit" disabled={!isConfigured || loading || !canSubmit}>
+
+      {/* Account creation requirements checklist */}
+      {isConfigured && !canSubmit && (
+        <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs">
+          <span className="font-semibold text-muted-foreground block mb-2">Registration checklist:</span>
+          <ul className="space-y-1.5 font-medium">
+            <ChecklistRequirement checked={emailValid} label="Valid email address" />
+            <ChecklistRequirement checked={passwordLengthValid} label="Password (6+ characters)" />
+            <ChecklistRequirement checked={passwordsMatch && !!password} label="Passwords match" />
+            <ChecklistRequirement checked={acceptedTerms} label="Accept Terms of Service" />
+            <ChecklistRequirement checked={acceptedPrivacy} label="Accept Privacy Policy" />
+          </ul>
+        </div>
+      )}
+
+      <Button
+        type="submit"
+        disabled={!isConfigured || loading || !canSubmit}
+        className="w-full"
+      >
         {loading ? "Creating account…" : "Create account"}
       </Button>
-      {(!canSubmit || passwordMismatch) && isConfigured ? (
-        <p className="text-xs text-muted-foreground text-center">
-          You must agree to the Terms of Service and Privacy Policy and enter
-          matching passwords to create an account.
-        </p>
-      ) : null}
-      <p className="text-center text-sm text-muted-foreground">
+
+      <p className="text-center text-sm text-muted-foreground mt-2">
         Already have an account?{" "}
         <Link
           href="/sign-in"
-          className="font-medium text-foreground underline-offset-4 hover:underline"
+          className="font-medium text-foreground underline-offset-4 hover:underline hover:text-success transition-colors"
         >
           Sign in
         </Link>
       </p>
     </form>
+  );
+}
+
+function ChecklistRequirement({ checked, label }: { checked: boolean; label: string }) {
+  return (
+    <li className="flex items-center gap-2">
+      <span
+        className={`h-2 w-2 rounded-full transition-colors ${
+          checked ? "bg-success" : "bg-muted-foreground/30"
+        }`}
+      />
+      <span className={checked ? "text-foreground" : "text-muted-foreground/70"}>
+        {label}
+      </span>
+    </li>
   );
 }

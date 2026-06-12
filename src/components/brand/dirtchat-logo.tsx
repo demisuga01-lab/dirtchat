@@ -28,7 +28,7 @@ export function DirtchatLogo({
 
   return (
     <span
-      className={cn("inline-flex items-center gap-2", className)}
+      className={cn("inline-flex items-center gap-2.5", className)}
       aria-label="Dirtchat"
     >
       <svg
@@ -40,54 +40,61 @@ export function DirtchatLogo({
         aria-hidden="true"
         className="shrink-0"
       >
-        {/* Gradient definitions */}
-        <defs>
-          <linearGradient id="dc-bg" x1="0" y1="0" x2="48" y2="48">
-            <stop offset="0%" stopColor="#6366f1" />
-            <stop offset="100%" stopColor="#4f46e5" />
-          </linearGradient>
-          <linearGradient id="dc-route" x1="32" y1="36" x2="44" y2="44">
-            <stop offset="0%" stopColor="#a78bfa" />
-            <stop offset="100%" stopColor="#34d399" />
-          </linearGradient>
-        </defs>
-
-        {/* Rounded-square background with chat tail */}
-        <path
-          d="M4 12C4 7.58 7.58 4 12 4H36C40.42 4 44 7.58 44 12V30C44 34.42 40.42 38 36 38H30L26 42L24 38H12C7.58 38 4 34.42 4 30V12Z"
-          fill="url(#dc-bg)"
+        {/* Background container */}
+        <rect
+          width="48"
+          height="48"
+          rx="12"
+          fill="#030303"
+          stroke="rgba(34, 197, 94, 0.2)"
+          strokeWidth="1.5"
         />
 
-        {/* Letter D */}
+        {/* Outer loop of D representing the workspace envelope */}
         <path
-          d="M16 13H24C29.52 13 34 17.48 34 23C34 28.52 29.52 33 24 33H16V13Z
-             M20 17V29H24C27.31 29 30 26.31 30 23C30 19.69 27.31 17 24 17H20Z"
-          fill="white"
-          fillRule="evenodd"
+          d="M14 12H25C31.627 12 37 17.373 37 24C37 30.627 31.627 36 25 36H14V12Z"
+          stroke="white"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
 
-        {/* Route line extending from tail — model routing motif */}
-        <line
-          x1="26"
-          y1="42"
-          x2="38"
-          y2="46"
-          stroke="url(#dc-route)"
+        {/* Dynamic connection lines (model routing pathways) */}
+        {/* Pathway 1 (Green) */}
+        <path
+          d="M19 18H25"
+          stroke="#22c55e"
           strokeWidth="2"
           strokeLinecap="round"
         />
+        <circle cx="27" cy="18" r="1.5" fill="#22c55e" />
 
-        {/* Route terminus dot — represents a model provider node */}
-        <circle cx="38" cy="46" r="2.5" fill="#34d399" />
+        {/* Pathway 2 (White) */}
+        <path
+          d="M19 24H28"
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <circle cx="30" cy="24" r="1.5" fill="white" />
+
+        {/* Pathway 3 (Green) */}
+        <path
+          d="M19 30H22"
+          stroke="#22c55e"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <circle cx="24" cy="30" r="1.5" fill="#22c55e" />
       </svg>
 
       {showWordmark && (
         <span
           className={cn(
-            "font-bold tracking-tight",
-            size === "sm" && "text-base",
-            size === "md" && "text-lg",
-            size === "lg" && "text-xl"
+            "font-semibold tracking-tight text-foreground",
+            size === "sm" && "text-sm",
+            size === "md" && "text-base",
+            size === "lg" && "text-lg"
           )}
         >
           Dirtchat

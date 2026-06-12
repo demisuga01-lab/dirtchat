@@ -13,23 +13,52 @@ export function BrandMark({ size = 32, className }: { size?: number; className?:
       className={className}
       aria-hidden="true"
     >
-      <defs>
-        <linearGradient id="bm-bg" x1="0" y1="0" x2="48" y2="48">
-          <stop offset="0%" stopColor="#6366f1" />
-          <stop offset="100%" stopColor="#4f46e5" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M4 12C4 7.58 7.58 4 12 4H36C40.42 4 44 7.58 44 12V30C44 34.42 40.42 38 36 38H30L26 42L24 38H12C7.58 38 4 34.42 4 30V12Z"
-        fill="url(#bm-bg)"
+      {/* Background container */}
+      <rect
+        width="48"
+        height="48"
+        rx="12"
+        fill="#030303"
+        stroke="rgba(34, 197, 94, 0.2)"
+        strokeWidth="1.5"
       />
+
+      {/* Outer loop of D representing the workspace envelope */}
       <path
-        d="M16 13H24C29.52 13 34 17.48 34 23C34 28.52 29.52 33 24 33H16V13Z
-           M20 17V29H24C27.31 29 30 26.31 30 23C30 19.69 27.31 17 24 17H20Z"
-        fill="white"
-        fillRule="evenodd"
+        d="M14 12H25C31.627 12 37 17.373 37 24C37 30.627 31.627 36 25 36H14V12Z"
+        stroke="white"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
-      <circle cx="38" cy="46" r="2.5" fill="#34d399" />
+
+      {/* Dynamic connection lines (model routing pathways) */}
+      {/* Pathway 1 (Green) */}
+      <path
+        d="M19 18H25"
+        stroke="#22c55e"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle cx="27" cy="18" r="1.5" fill="#22c55e" />
+
+      {/* Pathway 2 (White) */}
+      <path
+        d="M19 24H28"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle cx="30" cy="24" r="1.5" fill="white" />
+
+      {/* Pathway 3 (Green) */}
+      <path
+        d="M19 30H22"
+        stroke="#22c55e"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle cx="24" cy="30" r="1.5" fill="#22c55e" />
     </svg>
   );
 }

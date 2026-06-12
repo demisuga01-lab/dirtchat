@@ -16,6 +16,7 @@ import {
 import { ThemeToggle } from "@/components/app/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { DirtchatLogo } from "@/components/brand/dirtchat-logo";
 
 type Thread = {
   id: string;
@@ -116,11 +117,8 @@ export function WorkspaceSidebar({ userEmail }: { userEmail?: string }) {
     <aside className="hidden md:flex md:w-64 md:flex-col md:border-r md:border-border/60 md:bg-background/40">
       {/* Brand header */}
       <div className="flex h-14 items-center justify-between border-b border-border/60 px-4">
-        <Link href="/dashboard" className="flex items-center gap-2.5 font-bold tracking-tight">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
-            D
-          </div>
-          <span className="text-sm">Dirtchat</span>
+        <Link href="/dashboard" className="flex items-center">
+          <DirtchatLogo size="sm" showWordmark />
         </Link>
         <ThemeToggle />
       </div>

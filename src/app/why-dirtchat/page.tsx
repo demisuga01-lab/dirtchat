@@ -216,16 +216,16 @@ function CompareRow({
   other: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div className="rounded-xl border border-border bg-card p-6 hover:border-success/30 transition-colors">
       <h3 className="text-sm font-semibold">{label}</h3>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
-          <div className="text-[11px] font-medium uppercase tracking-wider text-primary/70">
+        <div className="rounded-lg border border-success/30 bg-success/5 px-4 py-3">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-success">
             Dirtchat
           </div>
           <p className="mt-1 text-sm text-foreground">{dirtchat}</p>
         </div>
-        <div className="rounded-lg border border-border/60 bg-muted/50 px-4 py-3">
+        <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
           <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             Typical single-provider tool
           </div>

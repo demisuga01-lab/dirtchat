@@ -32,6 +32,29 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Passwords do not match" }, { status: 400 });
   }
 
+  // Verify terms and privacy acceptance at the logic level
+  const admin = createAdminClient();
+  const { data: activeDocs, error: legalError } = await admin
+    .from("legal_documents")
+    .select("id, document_type")
+    .eq("is_active", true);
+
+  if (legalError) {
+    return NextResponse.json({ error: "Failed to verify legal document configuration." }, { status: 500 });
+  }
+
+  const activeTerms = activeDocs?.find((d) => d.document_type === "terms_of_service");
+  const activePrivacy = activeDocs?.find((d) => d.document_type === "privacy_policy");
+  const submittedIds = new Set(acceptedLegalDocumentIds ?? []);
+
+  if (activeTerms && !submittedIds.has(activeTerms.id)) {
+    return NextResponse.json({ error: "You must accept the Terms of Service to create an account." }, { status: 400 });
+  }
+
+  if (activePrivacy && !submittedIds.has(activePrivacy.id)) {
+    return NextResponse.json({ error: "You must accept the Privacy Policy to create an account." }, { status: 400 });
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase.auth.signUp({
