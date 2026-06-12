@@ -111,16 +111,10 @@ cp .env.example .env.local
 | `SUPABASE_SERVICE_ROLE_KEY` | Required for Prompt 2 | Server-only. Used to bypass RLS for the encrypted secrets table. **Never** expose to the browser. |
 | `PROVIDER_KEY_ENCRYPTION_KEY` | Required for Prompt 2 | Base64-encoded 32-byte AES-256-GCM key. See generation commands below. |
 
-Generate a 32-byte key with PowerShell:
-
-```powershell
-[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))
-```
-
-Or with OpenSSL:
+Generate a 32-byte key with Node.js:
 
 ```bash
-openssl rand -base64 32
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
 > The app builds and renders without these values, but provider CRUD
@@ -139,6 +133,8 @@ The repo ships local SQL migrations under `supabase/migrations/`:
   `model_capabilities`, `model_discovery_runs`, `model_discovery_events`
 - `20260612000400_chat_backend.sql` — `chat_threads`, `chat_messages`,
   `chat_generation_runs` + RLS + indexes
+- `20260612000500_storage_buckets.sql` — `chat-attachments`, `avatars`,
+  `temp-uploads` buckets + storage RLS policies
 
 Apply them in one of these ways:
 
@@ -367,6 +363,36 @@ and a polished thread sidebar.
   `Bearer …`, `sk-…`, JWT-shaped values, and key/value pairs whose
   field name contains `key`, `secret`, `token`, `password`, or
   `service[_-]?role`.
+
+## Supabase Storage
+
+Three buckets are defined in migration `20260612000500_storage_buckets.sql`:
+
+| Bucket | Access | Limit | Purpose |
+| --- | --- | --- | --- |
+| `chat-attachments` | Private | 50 MB | Chat file/image uploads. User-scoped RLS. |
+| `avatars` | Public-read | 5 MB | User profile images. Public SELECT, owner-only writes. |
+| `temp-uploads` | Private | 100 MB | Temporary upload processing. User-scoped RLS. |
+
+All buckets use `auth.uid()::text = (storage.foldername(name))[1]` to
+scope access to the owning user. Upload clients must prefix object paths
+with `{user_id}/`.
+
+Private buckets (`chat-attachments`, `temp-uploads`) require signed URLs
+generated server-side via the service-role client. The `avatars` bucket
+is public-read so avatar images render without signed tokens.
+
+### Applying the storage migration
+
+If your Supabase project already has the earlier migrations applied,
+run `20260612000500_storage_buckets.sql` in the Supabase SQL editor or via:
+
+```bash
+supabase db push
+```
+
+The migration is idempotent — it uses `on conflict (id) do nothing` for
+bucket creation and standard `create policy` for RLS.
 
 ## License
 
