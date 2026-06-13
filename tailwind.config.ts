@@ -37,9 +37,13 @@ const config: Config = {
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       borderRadius: {
+        sm: "var(--radius)",
+        DEFAULT: "var(--radius)",
+        md: "var(--radius)",
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 4px)",
-        sm: "calc(var(--radius) - 8px)",
+        xl: "var(--radius)",
+        "2xl": "var(--radius)",
+        "3xl": "var(--radius)",
       },
       keyframes: {
         "fade-in": {

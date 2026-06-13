@@ -30,8 +30,8 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
   const [acceptedPrivacy, setAcceptedPrivacy] = React.useState(false);
   const { isConfigured, configState } = getSupabaseEnv();
 
-  const termsDoc = legalDocs.find((d) => d.document_type === "terms_of_service");
-  const privacyDoc = legalDocs.find((d) => d.document_type === "privacy_policy");
+  const termsDoc = legalDocs.find((d) => d.document_type === "terms");
+  const privacyDoc = legalDocs.find((d) => d.document_type === "privacy");
   const emailValid = email.includes("@");
   const passwordLengthValid = password.length >= 8;
   const passwordsMatch = password === confirmPassword;

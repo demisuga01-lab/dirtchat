@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export type LegalDocument = {
   id: string;
-  document_type: "terms_of_service" | "privacy_policy";
+  document_type: "terms" | "privacy";
   version: string;
   title: string;
   content: string;

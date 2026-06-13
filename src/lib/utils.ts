@@ -38,17 +38,17 @@ function looksDemo(value: string): boolean {
 }
 
 export function getSupabasePublicConfig(): SupabasePublicConfigState {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
   const missing: string[] = [];
-  if (!url) missing.push("NEXT_PUBLIC_SUPABASE_URL");
+  if (!rawUrl) missing.push("NEXT_PUBLIC_SUPABASE_URL");
   if (!anonKey) missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 
   if (missing.length > 0) return { status: "missing", missing };
 
   const demo: string[] = [];
-  if (looksDemo(url)) demo.push("NEXT_PUBLIC_SUPABASE_URL");
+  if (looksDemo(rawUrl)) demo.push("NEXT_PUBLIC_SUPABASE_URL");
   if (looksDemo(anonKey)) demo.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 
   if (demo.length > 0) return { status: "demo", demo };
@@ -68,7 +68,8 @@ export function getSupabaseEnv(): {
   isConfigured: boolean;
   configState: SupabasePublicConfigState;
 } {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const url = rawUrl.replace(/\/rest\/v1\/?$/, "");
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
   const configState = getSupabasePublicConfig();
 

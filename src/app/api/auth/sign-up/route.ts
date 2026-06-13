@@ -43,8 +43,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to verify legal document configuration." }, { status: 500 });
   }
 
-  const activeTerms = activeDocs?.find((d) => d.document_type === "terms_of_service");
-  const activePrivacy = activeDocs?.find((d) => d.document_type === "privacy_policy");
+  const activeTerms = activeDocs?.find((d) => d.document_type === "terms");
+  const activePrivacy = activeDocs?.find((d) => d.document_type === "privacy");
   const submittedIds = new Set(acceptedLegalDocumentIds ?? []);
 
   if (activeTerms && !submittedIds.has(activeTerms.id)) {

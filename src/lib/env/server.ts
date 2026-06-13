@@ -66,7 +66,8 @@ function readProviderKeyEncryptionKey(): string {
  * helpful "not configured" state in development without crashing.
  */
 export function getServerEnv(): ServerEnv {
-  const supabaseUrl = readSupabaseUrl();
+  const rawUrl = readSupabaseUrl();
+  const supabaseUrl = rawUrl.replace(/\/rest\/v1\/?$/, "");
   const supabaseAnonKey = readSupabaseAnonKey();
   const supabaseServiceRoleKey = readSupabaseServiceRoleKey();
   const providerKeyEncryptionKey = readProviderKeyEncryptionKey();
@@ -75,9 +76,9 @@ export function getServerEnv(): ServerEnv {
     supabaseUrl,
     supabaseAnonKey,
     supabaseIsConfigured:
-      !!supabaseUrl &&
+      !!rawUrl &&
       !!supabaseAnonKey &&
-      !isPlaceholder(supabaseUrl) &&
+      !isPlaceholder(rawUrl) &&
       !isPlaceholder(supabaseAnonKey),
 
     supabaseServiceRoleKey,
