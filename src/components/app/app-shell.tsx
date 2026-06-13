@@ -46,11 +46,13 @@ export function AppShell({
 
   return (
     <div className="flex min-h-[100dvh] w-full bg-background text-foreground">
-      <WorkspaceSidebar
-        userEmail={userEmail}
-        collapsed={sidebarCollapsed}
-        onToggle={toggleSidebar}
-      />
+      <React.Suspense fallback={<div className={`hidden md:block bg-background border-r border-border ${sidebarCollapsed ? "md:w-16" : "md:w-64"}`} />}>
+        <WorkspaceSidebar
+          userEmail={userEmail}
+          collapsed={sidebarCollapsed}
+          onToggle={toggleSidebar}
+        />
+      </React.Suspense>
       <MobileNav open={navOpen} onClose={() => setNavOpen(false)} />
       <div className="flex w-full min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-4 md:px-6">

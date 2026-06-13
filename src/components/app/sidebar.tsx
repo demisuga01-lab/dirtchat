@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   MessageSquare,
   Settings,
@@ -38,6 +38,9 @@ export function WorkspaceSidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeThreadId = searchParams.get("thread");
+
   const [threads, setThreads] = useState<Thread[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -61,10 +64,10 @@ export function WorkspaceSidebar({
     fetchThreads();
   }, [fetchThreads]);
 
-  // Re-fetch when path changes (user may have created/deleted threads)
+  // Re-fetch when path or active thread changes (user may have created/deleted threads)
   useEffect(() => {
     fetchThreads();
-  }, [pathname, fetchThreads]);
+  }, [pathname, activeThreadId, fetchThreads]);
 
   const handleNewChat = () => {
     router.push("/chat");
@@ -74,6 +77,9 @@ export function WorkspaceSidebar({
     try {
       await fetch(`/api/chat/threads/${id}`, { method: "DELETE" });
       setThreads((prev) => prev.filter((t) => t.id !== id));
+      if (activeThreadId === id) {
+        router.push("/chat");
+      }
     } catch {
       // silent
     }
@@ -88,10 +94,43 @@ export function WorkspaceSidebar({
         body: JSON.stringify({ is_archived: true }),
       });
       setThreads((prev) => prev.filter((t) => t.id !== id));
+      if (activeThreadId === id) {
+        router.push("/chat");
+      }
     } catch {
       // silent
     }
     setMenuOpen(null);
+  };
+
+  const handleRename = async (id: string, title: string) => {
+    try {
+      await fetch(`/api/chat/threads/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      setThreads((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, title } : t))
+      );
+    } catch {
+      // silent
+    }
+  };
+
+  const handlePin = async (id: string, pinned: boolean) => {
+    try {
+      await fetch(`/api/chat/threads/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_pinned: pinned }),
+      });
+      setThreads((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, is_pinned: pinned } : t))
+      );
+    } catch {
+      // silent
+    }
   };
 
   const filteredThreads = search
@@ -202,10 +241,12 @@ export function WorkspaceSidebar({
               <ThreadRow
                 key={t.id}
                 thread={t}
-                isActive={pathname === `/chat?thread=${t.id}`}
+                isActive={activeThreadId === t.id}
                 formatTime={formatTime}
                 onDelete={handleDelete}
                 onArchive={handleArchive}
+                onRename={handleRename}
+                onPin={handlePin}
                 menuOpen={menuOpen}
                 setMenuOpen={setMenuOpen}
                 collapsed={collapsed}
@@ -225,10 +266,12 @@ export function WorkspaceSidebar({
               <ThreadRow
                 key={t.id}
                 thread={t}
-                isActive={pathname === `/chat?thread=${t.id}`}
+                isActive={activeThreadId === t.id}
                 formatTime={formatTime}
                 onDelete={handleDelete}
                 onArchive={handleArchive}
+                onRename={handleRename}
+                onPin={handlePin}
                 menuOpen={menuOpen}
                 setMenuOpen={setMenuOpen}
                 collapsed={collapsed}
@@ -277,6 +320,8 @@ function ThreadRow({
   formatTime,
   onDelete,
   onArchive,
+  onRename,
+  onPin,
   menuOpen,
   setMenuOpen,
   collapsed = false,
@@ -286,6 +331,8 @@ function ThreadRow({
   formatTime: (iso: string | null) => string;
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
+  onRename: (id: string, title: string) => void;
+  onPin: (id: string, pinned: boolean) => void;
   menuOpen: string | null;
   setMenuOpen: (id: string | null) => void;
   collapsed?: boolean;
@@ -356,14 +403,43 @@ function ThreadRow({
         <div className="absolute right-0 top-full z-50 mt-1 w-36 rounded-lg border border-border bg-popover p-1 shadow-md">
           <button
             type="button"
-            onClick={() => onArchive(thread.id)}
-            className="w-full rounded px-2 py-1.5 text-left text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
+            onClick={() => {
+              setMenuOpen(null);
+              const newTitle = window.prompt("Rename conversation", thread.title);
+              if (newTitle && newTitle.trim()) {
+                onRename(thread.id, newTitle.trim());
+              }
+            }}
+            className="w-full rounded px-2 py-1.5 text-left text-xs text-foreground hover:bg-secondary"
+          >
+            Rename
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMenuOpen(null);
+              onPin(thread.id, !thread.is_pinned);
+            }}
+            className="w-full rounded px-2 py-1.5 text-left text-xs text-foreground hover:bg-secondary"
+          >
+            {thread.is_pinned ? "Unpin" : "Pin"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMenuOpen(null);
+              onArchive(thread.id);
+            }}
+            className="w-full rounded px-2 py-1.5 text-left text-xs text-foreground hover:bg-secondary"
           >
             Archive
           </button>
           <button
             type="button"
-            onClick={() => onDelete(thread.id)}
+            onClick={() => {
+              setMenuOpen(null);
+              onDelete(thread.id);
+            }}
             className="w-full rounded px-2 py-1.5 text-left text-xs text-destructive hover:bg-destructive/10"
           >
             Delete

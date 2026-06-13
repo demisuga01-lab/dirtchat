@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { ChatThreadSidebar } from "@/components/chat/chat-thread-sidebar";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { ChatMessageList } from "@/components/chat/chat-message-list";
 import { ChatComposer } from "@/components/chat/chat-composer";
 import { ChatModelSelector } from "@/components/chat/chat-model-selector";
 import { ChatEmptyState } from "@/components/chat/chat-empty-state";
 import { useChatStream } from "@/components/chat/use-chat-stream";
-import type { ChatThread, ChatModelOption } from "@/lib/chat/types";
+import type { ChatModelOption } from "@/lib/chat/types";
 
 export function ChatWorkspace() {
   const {
@@ -18,36 +18,38 @@ export function ChatWorkspace() {
     modelOptions,
     fetchModels,
     loadThread,
-    listThreads,
-    createThread,
-    renameThread,
-    deleteThread,
-    archiveThread,
-    pinThread,
     sendMessage,
     cancelStream,
     regenerate,
     editAndResend,
+    clearThread,
   } = useChatStream();
 
-  const [threads, setThreads] = useState<ChatThread[]>([]);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const threadId = searchParams.get("thread");
+
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
-  const [isLoadingThreads, setIsLoadingThreads] = useState(true);
   const [editMessageId, setEditMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState<string>("");
 
   useEffect(() => {
-    async function init() {
-      setIsLoadingThreads(true);
-      const [loadedThreads] = await Promise.all([
-        listThreads(),
-        fetchModels(),
-      ]);
-      setThreads(loadedThreads);
-      setIsLoadingThreads(false);
+    fetchModels();
+  }, [fetchModels]);
+
+  useEffect(() => {
+    if (threadId) {
+      loadThread(threadId);
+    } else {
+      clearThread();
     }
-    init();
-  }, [fetchModels, listThreads]);
+  }, [threadId, loadThread, clearThread]);
+
+  useEffect(() => {
+    if (thread?.id && threadId !== thread.id) {
+      router.replace(`/chat?thread=${thread.id}`);
+    }
+  }, [thread?.id, threadId, router]);
 
   useEffect(() => {
     if (modelOptions.length > 0 && !selectedModelId) {
@@ -56,45 +58,9 @@ export function ChatWorkspace() {
     }
   }, [modelOptions, selectedModelId]);
 
-  const refreshThreads = useCallback(async () => {
-    const updated = await listThreads();
-    setThreads(updated);
-  }, [listThreads]);
-
   async function handleNewThread() {
-    if (!thread?.id) {
-      const t = await createThread();
-      if (t) await refreshThreads();
-    } else {
-      const t = await createThread();
-      if (t) await refreshThreads();
-    }
+    router.push("/chat");
     cancelEdit();
-  }
-
-  async function handleSelectThread(id: string) {
-    await loadThread(id);
-    cancelEdit();
-  }
-
-  async function handleDeleteThread(id: string) {
-    await deleteThread(id);
-    await refreshThreads();
-  }
-
-  async function handleArchiveThread(id: string) {
-    await archiveThread(id);
-    await refreshThreads();
-  }
-
-  async function handleRenameThread(id: string, title: string) {
-    await renameThread(id, title);
-    await refreshThreads();
-  }
-
-  async function handlePinThread(id: string, pinned: boolean) {
-    await pinThread(id, pinned);
-    await refreshThreads();
   }
 
   function handleEditMessage(messageId: string, content: string) {
@@ -120,7 +86,6 @@ export function ChatWorkspace() {
       modelId: selectedModel?.model_id,
     });
     cancelEdit();
-    await refreshThreads();
   }
 
   async function handleSend(message: string) {
@@ -134,7 +99,6 @@ export function ChatWorkspace() {
       providerModelId: selectedModel?.provider_model_id,
       modelId: selectedModel?.model_id,
     });
-    await refreshThreads();
   }
 
   function handleRegenerate() {
@@ -167,17 +131,6 @@ export function ChatWorkspace() {
       onKeyDown={handleKeyDown}
     >
       <div className="flex flex-1 overflow-hidden">
-        <ChatThreadSidebar
-          threads={threads}
-          activeThreadId={thread?.id ?? null}
-          isLoading={isLoadingThreads}
-          onSelect={handleSelectThread}
-          onNew={handleNewThread}
-          onDelete={handleDeleteThread}
-          onArchive={handleArchiveThread}
-          onRename={handleRenameThread}
-          onPin={handlePinThread}
-        />
         <section className="flex flex-1 flex-col overflow-hidden">
           {thread || messages.length > 0 ? (
             <>

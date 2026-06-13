@@ -494,6 +494,12 @@ export function useChatStream() {
     [sendMessage, isStreaming]
   );
 
+  const clearThread = useCallback(() => {
+    setThread(null);
+    setMessages([]);
+    setError(null);
+  }, []);
+
   return {
     thread,
     messages,
@@ -512,5 +518,6 @@ export function useChatStream() {
     cancelStream,
     regenerate,
     editAndResend,
+    clearThread,
   };
 }

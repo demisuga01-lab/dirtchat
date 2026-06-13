@@ -10,11 +10,10 @@ export function ChatEmptyState() {
           <MessageSquare className="h-5 w-5" />
         </div>
         <h2 className="text-xl font-semibold tracking-tight">
-          Select a conversation
+          Start a new conversation
         </h2>
         <p className="mt-2 text-balance text-sm text-muted-foreground">
-          Choose an existing conversation from the sidebar or start a new one to
-          begin chatting.
+          Type your first message below to begin a new chat thread. Your conversation history will be saved automatically.
         </p>
       </div>
     </div>
