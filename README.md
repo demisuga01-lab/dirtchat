@@ -205,15 +205,21 @@ Then open:
 | `npm run start` | Run the production build. |
 | `npm run lint` | Run ESLint using Next.js's recommended config. |
 
-## Provider manager (Prompt 2)
+## Provider manager (Presets & Custom Connections)
 
 `/settings/providers` is a real, persisted connection manager.
 
-- **Presets:** TokenRouter (recommended), OpenRouter, OpenAI-compatible
-  custom, Anthropic-compatible custom.
-- **TokenRouter preset:** label `TokenRouter (MiniMax-M3)`, base URL
-  `https://api.tokenrouter.com/v1/chat/completions`, default model
-  `MiniMax-M3`.
+- **Searchable Provider Preset Registry:** Includes pre-configured presets grouped by:
+  - **Popular:** OpenAI, Google Gemini, OpenRouter, Anthropic (disabled).
+  - **Direct model providers:** Mistral AI, xAI (Grok), DeepSeek, Groq, Together AI, Fireworks AI, Nvidia NIM, Perplexity AI, Cohere, Cerebras, Moonshot AI, MiniMax, AI21 Studio, Aleph Alpha (disabled), Voyage AI (disabled), Replicate (disabled).
+  - **Routers & Gateways:** TokenRouter, LiteLLM Proxy, Portkey Gateway, Helicone Gateway.
+  - **Local/Self-hosted:** Ollama, LM Studio, LocalAI, vLLM Server, llama.cpp Server.
+  - **Custom:** Custom OpenAI-compatible, Custom Anthropic-compatible.
+- **Custom Provider Support:** Custom setups are treated as first-class. Selecting any preset populates the base URL and API style, but keeps all fields fully editable, allowing users to override base URLs, protocols, and model identifiers.
+- **Model Discovery vs. Manual Model ID:**
+  - **Model Discovery:** OpenAI-compatible providers can automatically scan endpoints (`GET /v1/models`) to retrieve, normalise, and cache the available models list with their inferred capabilities (JSON mode, tool calling, structured outputs, streaming, reasoning).
+  - **Manual Model ID Fallback:** If model discovery fails or is not supported (e.g. for endpoints that don't list models, like direct completions routes), users can manually add a model ID and override its capabilities in the Model Catalog, bypassing discovery without breaking.
+- **Router Provider vs. Model Owner Distinction:** Presets and discovery separate the *provider connection* (e.g. OpenRouter or TokenRouter) from the *model owner/maker* (e.g. Meta Llama, Anthropic, or DeepSeek). This prevents hardcoding vendor assumptions and ensures dynamic routing operates correctly.
 - **Encryption:** keys are encrypted server-side with AES-256-GCM using
   `PROVIDER_KEY_ENCRYPTION_KEY`. Only the last 4 characters are ever
   returned to the browser. The full secret is never displayed, never

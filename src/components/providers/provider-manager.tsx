@@ -15,12 +15,17 @@ import {
   Eye,
   EyeOff,
   Cpu,
+  Search,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toaster";
+import { ProviderLogo } from "@/components/providers/provider-logo";
+import { cn } from "@/lib/utils";
 import {
   PRESETS,
   type PresetDefinition,
@@ -119,6 +124,14 @@ function formatTimestamp(ts: string | null): string {
   } catch {
     return ts;
   }
+}
+
+function getLogoKeyForProvider(provider: { provider_type: string; base_url: string }) {
+  const preset = PRESETS.find(
+    (p) => p.baseUrl && provider.base_url.toLowerCase().startsWith(p.baseUrl.toLowerCase())
+  );
+  if (preset) return preset.logoKey;
+  return provider.provider_type;
 }
 
 export function ProviderManager() {
@@ -328,31 +341,31 @@ export function ProviderManager() {
       {errorBanner ? (
         <div
           role="alert"
-          className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+          className="rounded-none border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
         >
           {errorBanner}
         </div>
       ) : null}
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-none border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground/70">
             <ShieldCheck className="h-3.5 w-3.5" /> Encrypted at rest
           </div>
           <p className="mt-1.5 text-sm text-foreground">
             Keys are encrypted with AES-256-GCM using a server-only key.
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-none border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground/70">
             <Zap className="h-3.5 w-3.5" /> OpenAI-compatible
           </div>
           <p className="mt-1.5 text-sm text-foreground">
             TokenRouter, OpenRouter, and custom routers supported.
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-none border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground/70">
             <KeyRound className="h-3.5 w-3.5" /> Never shown again
           </div>
           <p className="mt-1.5 text-sm text-foreground">
@@ -365,95 +378,105 @@ export function ProviderManager() {
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold">Your providers</h2>
           {!editing ? (
-            <Button onClick={startNew} size="sm">
+            <Button onClick={startNew} size="sm" className="rounded-none font-semibold uppercase tracking-wider text-xs border-border hover:bg-secondary">
               <Plus className="h-4 w-4" /> Add provider
             </Button>
           ) : null}
         </div>
 
         {loadingList ? (
-          <div className="flex items-center gap-2 rounded-xl border border-dashed border-border/60 p-6 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 rounded-none border border-dashed border-border/60 p-6 text-sm text-foreground/60">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading providers…
           </div>
         ) : providers && providers.length === 0 && !editing ? (
           <EmptyState onAdd={startNew} />
         ) : providers && providers.length > 0 ? (
           <ul className="flex flex-col gap-3">
-            {providers.map((p) => (
-              <li
-                key={p.id}
-                className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="flex min-w-0 flex-col gap-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="truncate text-sm font-semibold">
-                      {p.label}
-                    </span>
-                    {statusBadge(p.status as ProviderStatus)}
-                    {p.secret ? (
-                      <Badge variant="outline" className="gap-1">
-                        <KeyRound className="h-3 w-3" />
-                        Key ····{p.secret.key_last4 ?? "????"}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">No key</Badge>
-                    )}
-                    {!p.is_enabled ? <Badge variant="outline">Off</Badge> : null}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                    <span>{p.protocol}</span>
-                    <span>·</span>
-                    <span className="font-mono" title={p.base_url}>
-                      {truncateUrl(p.base_url, 56)}
-                    </span>
-                    {p.default_model ? (
-                      <>
+            {providers.map((p) => {
+              const logoKey = getLogoKeyForProvider(p);
+              return (
+                <li
+                  key={p.id}
+                  className="flex flex-col gap-3 border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between rounded-none"
+                >
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className="mt-1">
+                      <ProviderLogo logoKey={logoKey} className="h-5 w-5" />
+                    </div>
+                    <div className="flex min-w-0 flex-col gap-1 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="truncate text-sm font-bold">
+                          {p.label}
+                        </span>
+                        {statusBadge(p.status as ProviderStatus)}
+                        {p.secret ? (
+                          <Badge variant="outline" className="gap-1 rounded-none text-[10px] font-bold uppercase tracking-wider">
+                            <KeyRound className="h-3 w-3" />
+                            Key ····{p.secret.key_last4 ?? "????"}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="rounded-none text-[10px] font-bold uppercase tracking-wider">No key</Badge>
+                        )}
+                        {!p.is_enabled ? <Badge variant="outline" className="rounded-none text-[10px] font-bold uppercase tracking-wider">Off</Badge> : null}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-foreground/80 font-medium">
+                        <span>{p.protocol}</span>
                         <span>·</span>
-                        <span>default: {p.default_model}</span>
-                      </>
-                    ) : null}
+                        <span className="font-mono text-xs text-foreground/75" title={p.base_url}>
+                          {truncateUrl(p.base_url, 56)}
+                        </span>
+                        {p.default_model ? (
+                          <>
+                            <span>·</span>
+                            <span>default: {p.default_model}</span>
+                          </>
+                        ) : null}
+                      </div>
+                      <div className="text-[11px] text-foreground/60 font-medium">
+                        Last tested: {formatTimestamp(p.last_tested_at)}
+                        {p.last_test_latency_ms != null
+                          ? ` · ${p.last_test_latency_ms}ms`
+                          : ""}
+                        {p.last_test_error ? ` · ${p.last_test_error}` : ""}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    Last tested: {formatTimestamp(p.last_tested_at)}
-                    {p.last_test_latency_ms != null
-                      ? ` · ${p.last_test_latency_ms}ms`
-                      : ""}
-                    {p.last_test_error ? ` · ${p.last_test_error}` : ""}
+                  <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      href={`/settings/providers/${p.id}/models`}
+                      className="font-semibold uppercase tracking-wider text-xs border-border hover:bg-secondary rounded-none"
+                    >
+                      <Cpu className="h-3.5 w-3.5" /> Models
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => startEdit(p)}
+                      disabled={deleting === p.id}
+                      className="font-semibold uppercase tracking-wider text-xs border-border hover:bg-secondary rounded-none"
+                    >
+                      <Pencil className="h-3.5 w-3.5" /> Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onDelete(p)}
+                      disabled={deleting === p.id}
+                      className="font-semibold uppercase tracking-wider text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-none"
+                    >
+                      {deleting === p.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
+                      Delete
+                    </Button>
                   </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    href={`/settings/providers/${p.id}/models`}
-                  >
-                    <Cpu className="h-3.5 w-3.5" /> Models
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => startEdit(p)}
-                    disabled={deleting === p.id}
-                  >
-                    <Pencil className="h-3.5 w-3.5" /> Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onDelete(p)}
-                    disabled={deleting === p.id}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    {deleting === p.id ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-3.5 w-3.5" />
-                    )}
-                    Delete
-                  </Button>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         ) : null}
       </section>
@@ -471,26 +494,21 @@ export function ProviderManager() {
           </header>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="flex flex-col gap-2 md:col-span-2">
-              <Label htmlFor="preset">Preset</Label>
-              <select
-                id="preset"
-                value={form.presetId}
-                onChange={(e) => onPresetChange(e.target.value)}
-                className="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                disabled={!!form.id}
-              >
-                <option value="">Custom (no preset)</option>
-                {PRESETS.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
+            <div className="flex flex-col gap-2 md:col-span-2 relative">
+              <Label>Preset</Label>
               {form.id ? (
-                <p className="text-xs text-muted-foreground">
-                  Presets are only applied on create. Edit individual fields
-                  below.
+                <div className="flex items-center gap-2.5 h-10 rounded-none border border-border bg-secondary/50 px-3 text-sm text-foreground/80 font-medium">
+                  {form.presetId ? PRESETS.find((p) => p.id === form.presetId)?.label ?? form.presetId : "Custom connection"}
+                </div>
+              ) : (
+                <ProviderPicker
+                  value={form.presetId}
+                  onChange={onPresetChange}
+                />
+              )}
+              {form.id ? (
+                <p className="text-xs text-foreground/75">
+                  Presets are only applied on create. Edit individual fields below.
                 </p>
               ) : null}
             </div>
@@ -682,20 +700,180 @@ function Plus({ className }: { className?: string }) {
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border/60 p-6">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary">
+    <div className="flex flex-col items-start gap-3 rounded-none border border-dashed border-border/60 p-6">
+      <div className="flex h-9 w-9 items-center justify-center bg-secondary border border-border">
         <Plug className="h-4 w-4" />
       </div>
       <div>
-        <h3 className="text-sm font-semibold">No providers yet</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Connect TokenRouter to use MiniMax-M3, or add
-          OpenRouter / a custom OpenAI-compatible endpoint.
+        <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">No active API providers</h3>
+        <p className="mt-1 text-xs text-foreground/75 leading-relaxed">
+          Connect OpenAI, Google Gemini, OpenRouter, or other self-hosted/local model servers to start chatting.
         </p>
       </div>
-      <Button onClick={onAdd} size="sm">
+      <Button onClick={onAdd} size="sm" className="rounded-none font-semibold uppercase tracking-wider text-xs border-border hover:bg-secondary">
         Add your first provider
       </Button>
+    </div>
+  );
+}
+
+function ProviderPicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (presetId: string) => void;
+}) {
+  const [search, setSearch] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedPreset = PRESETS.find((p) => p.id === value);
+
+  const filteredPresets = PRESETS.filter((p) => {
+    const query = search.toLowerCase();
+    return (
+      p.label.toLowerCase().includes(query) ||
+      p.description.toLowerCase().includes(query) ||
+      (p.companyName && p.companyName.toLowerCase().includes(query))
+    );
+  });
+
+  const categories = [
+    { id: "popular", name: "Popular" },
+    { id: "direct", name: "Direct Providers" },
+    { id: "router", name: "Routers & Gateways" },
+    { id: "local", name: "Local / Self-hosted" },
+    { id: "custom", name: "Custom Setup" },
+  ] as const;
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex h-10 w-full items-center justify-between border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring rounded-none"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <div className="flex items-center gap-2.5 truncate">
+          {selectedPreset ? (
+            <>
+              <ProviderLogo logoKey={selectedPreset.logoKey} className="h-4.5 w-4.5" />
+              <span className="font-semibold text-foreground truncate">{selectedPreset.label}</span>
+              {selectedPreset.protocol && (
+                <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 border border-border bg-secondary text-foreground/80">
+                  {selectedPreset.protocol === "openai-compatible" ? "OpenAI API" : "Anthropic API"}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-foreground/80 font-medium">Custom (no preset)</span>
+          )}
+        </div>
+        <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 right-0 z-50 mt-1 max-h-[380px] flex flex-col border border-border bg-popover shadow-md overflow-hidden rounded-none">
+          <div className="relative border-b border-border p-2 bg-popover">
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search providers..."
+              className="h-9 w-full border border-input bg-background pl-9 pr-3 text-xs placeholder:text-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring rounded-none"
+              autoFocus
+            />
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-1 bg-popover divide-y divide-border/30">
+            {categories.map((cat) => {
+              const items = filteredPresets.filter((p) => p.category === cat.id);
+              if (items.length === 0) return null;
+
+              return (
+                <div key={cat.id} className="py-1.5">
+                  <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground/60">
+                    {cat.name}
+                  </div>
+                  <div className="mt-1 flex flex-col gap-0.5">
+                    {items.map((preset) => {
+                      const isSelected = preset.id === value;
+                      const isDisabled = preset.disabled;
+
+                      return (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          disabled={isDisabled}
+                          onClick={() => {
+                            onChange(preset.id);
+                            setOpen(false);
+                            setSearch("");
+                          }}
+                          className={cn(
+                            "flex w-full items-start gap-3 px-3 py-2 text-left transition-colors rounded-none",
+                            isSelected
+                              ? "bg-secondary text-foreground"
+                              : isDisabled
+                                ? "opacity-50 cursor-not-allowed hover:bg-transparent"
+                                : "hover:bg-secondary/50 text-foreground"
+                          )}
+                        >
+                          <div className="mt-0.5 shrink-0">
+                            <ProviderLogo logoKey={preset.logoKey} className="h-4.5 w-4.5" />
+                          </div>
+                          <div className="flex-1 min-w-0 space-y-0.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-bold text-foreground">
+                                {preset.label}
+                              </span>
+                              {preset.protocol && (
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-foreground/60 border border-border px-1">
+                                  {preset.protocol === "openai-compatible" ? "OpenAI" : "Anthropic"}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-foreground/80 leading-normal line-clamp-2">
+                              {preset.description}
+                            </p>
+                            {isDisabled && preset.disabledReason && (
+                              <p className="text-[9px] font-bold text-destructive uppercase tracking-wide">
+                                {preset.disabledReason}
+                              </p>
+                            )}
+                          </div>
+                          {isSelected && (
+                            <Check className="h-3.5 w-3.5 text-success shrink-0 mt-1" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+
+            {filteredPresets.length === 0 && (
+              <div className="px-3 py-6 text-center text-xs text-foreground/60">
+                No providers match your search query.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

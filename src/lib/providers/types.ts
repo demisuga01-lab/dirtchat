@@ -70,47 +70,25 @@ export interface PresetDefinition {
   baseUrl: string;
   defaultModel: string;
   description: string;
+
+  // Rich metadata extensions
+  companyName?: string;
+  category?: "popular" | "direct" | "router" | "local" | "custom";
+  apiStyle?: ProviderProtocol;
+  docsUrl?: string;
+  authHeaderType?: "bearer" | "custom" | "none";
+  modelDiscoveryType?: "v1-models" | "openrouter" | "anthropic" | "none";
+  supportsStreaming?: boolean;
+  supportsCustomModels?: boolean;
+  logoKey?: string;
+  shortDescription?: string;
+  setupHint?: string;
+  isPopular?: boolean;
+  isRouter?: boolean;
+  isDirectProvider?: boolean;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
-export const PRESETS: PresetDefinition[] = [
-  {
-    id: "tokenrouter-minimax-m3",
-    label: "TokenRouter (MiniMax-M3)",
-    providerType: "tokenrouter",
-    protocol: "openai-compatible",
-    baseUrl: "https://api.tokenrouter.com/v1/chat/completions",
-    defaultModel: "MiniMax-M3",
-    description:
-      "Recommended preset. TokenRouter with the MiniMax-M3 model on the OpenAI-compatible chat completions endpoint.",
-  },
-  {
-    id: "openrouter",
-    label: "OpenRouter",
-    providerType: "openrouter",
-    protocol: "openai-compatible",
-    baseUrl: "https://openrouter.ai/api/v1",
-    defaultModel: "",
-    description:
-      "OpenAI-compatible multi-provider router. Set a default model after connection.",
-  },
-  {
-    id: "openai-compatible",
-    label: "OpenAI-compatible custom",
-    providerType: "custom",
-    protocol: "openai-compatible",
-    baseUrl: "",
-    defaultModel: "",
-    description:
-      "Any OpenAI-compatible endpoint, including self-hosted routers and proxies.",
-  },
-  {
-    id: "anthropic-compatible",
-    label: "Anthropic-compatible custom",
-    providerType: "custom",
-    protocol: "anthropic-compatible",
-    baseUrl: "",
-    defaultModel: "",
-    description:
-      "Anthropic-style Messages API. Connection testing ships in a later prompt.",
-  },
-];
+import { PRESETS } from "./provider-presets";
+export { PRESETS };
