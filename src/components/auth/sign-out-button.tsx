@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toaster";
 
-export function SignOutButton({ className }: { className?: string }) {
+export function SignOutButton({ className, iconOnly }: { className?: string; iconOnly?: boolean }) {
   const router = useRouter();
   const { push } = useToast();
   const [loading, setLoading] = React.useState(false);
@@ -39,12 +39,15 @@ export function SignOutButton({ className }: { className?: string }) {
     <Button
       type="button"
       variant="outline"
+      size={iconOnly ? "icon" : "default"}
       onClick={onSignOut}
       disabled={loading}
       className={className}
+      aria-label="Sign out"
+      title="Sign out"
     >
       <LogOut className="h-4 w-4" />
-      {loading ? "Signing out…" : "Sign out"}
+      {!iconOnly && (loading ? "Signing out…" : "Sign out")}
     </Button>
   );
 }

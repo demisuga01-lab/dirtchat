@@ -212,14 +212,12 @@ export function ChatWorkspace() {
           ) : (
             <>
               <ChatEmptyState />
-              <div className="border-t border-border/60 bg-background/40 px-4 py-3 md:px-6">
-                <ChatComposer
-                  onSend={handleSend}
-                  onCancel={cancelStream}
-                  isStreaming={isStreaming}
-                  disabled={modelOptions.length === 0}
-                />
-              </div>
+              <ChatComposer
+                onSend={handleSend}
+                onCancel={cancelStream}
+                isStreaming={isStreaming}
+                disabled={modelOptions.length === 0}
+              />
             </>
           )}
         </section>

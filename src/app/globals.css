@@ -7,7 +7,7 @@
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted-foreground: 0 0% 30%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
@@ -37,7 +37,7 @@
     --background: 0 0% 4%;
     --foreground: 0 0% 100%;
     --muted: 0 0% 9%;
-    --muted-foreground: 0 0% 63.9%;
+    --muted-foreground: 0 0% 80%;
     --card: 0 0% 4%;
     --card-foreground: 0 0% 100%;
     --popover: 0 0% 4%;

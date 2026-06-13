@@ -17,6 +17,7 @@ import { ThemeToggle } from "@/components/app/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { DirtchatLogo } from "@/components/brand/dirtchat-logo";
+import { cn } from "@/lib/utils";
 
 type Thread = {
   id: string;
@@ -27,7 +28,14 @@ type Thread = {
   created_at: string;
 };
 
-export function WorkspaceSidebar({ userEmail }: { userEmail?: string }) {
+export function WorkspaceSidebar({
+  userEmail,
+  collapsed = false,
+}: {
+  userEmail?: string;
+  collapsed?: boolean;
+  onToggle?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -114,58 +122,82 @@ export function WorkspaceSidebar({ userEmail }: { userEmail?: string }) {
   }, [menuOpen]);
 
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col md:border-r md:border-border bg-background">
+    <aside
+      className={cn(
+        "hidden md:flex md:flex-col md:border-r md:border-border bg-background transition-all duration-300",
+        collapsed ? "md:w-16" : "md:w-64"
+      )}
+    >
       {/* Brand header */}
-      <div className="flex h-16 items-center justify-between border-b border-border px-4">
+      <div className={cn(
+        "flex h-16 items-center border-b border-border px-4",
+        collapsed ? "justify-center px-0" : "justify-between"
+      )}>
         <Link href="/dashboard" className="flex items-center">
-          <DirtchatLogo size="sm" showWordmark />
+          <DirtchatLogo size="sm" showWordmark={!collapsed} />
         </Link>
-        <ThemeToggle />
+        {!collapsed && <ThemeToggle />}
       </div>
 
       {/* New chat + Search */}
-      <div className="flex flex-col gap-2 p-3">
-        <Button
-          onClick={handleNewChat}
-          variant="outline"
-          size="default"
-          className="w-full justify-start gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          New chat
-        </Button>
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/50" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search conversations"
-            aria-label="Search conversations"
-            className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
-          />
-        </div>
+      <div className={cn("flex flex-col gap-2 p-3", collapsed && "items-center px-0")}>
+        {collapsed ? (
+          <Button
+            onClick={handleNewChat}
+            variant="outline"
+            size="icon"
+            title="New chat"
+            className="h-9 w-9"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        ) : (
+          <>
+            <Button
+              onClick={handleNewChat}
+              variant="outline"
+              size="default"
+              className="w-full justify-start gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              New chat
+            </Button>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/50" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search conversations"
+                aria-label="Search conversations"
+                className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Conversation list */}
-      <nav className="flex-1 overflow-y-auto px-2" aria-label="Conversations">
-        {isLoading && (
+      <nav className={cn("flex-1 overflow-y-auto px-2", collapsed && "px-0 flex flex-col items-center")} aria-label="Conversations">
+        {isLoading && !collapsed && (
           <div className="px-3 py-6 text-center text-xs text-muted-foreground">
             Loading conversations...
           </div>
         )}
 
-        {!isLoading && filteredThreads.length === 0 && (
+        {!isLoading && filteredThreads.length === 0 && !collapsed && (
           <div className="px-3 py-8 text-center text-xs text-muted-foreground">
             {search ? "No conversations match your search." : "No conversations yet."}
           </div>
         )}
 
         {pinnedThreads.length > 0 && (
-          <div className="mb-2">
-            <div className="px-3 py-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
-              Pinned
-            </div>
+          <div className={cn("mb-2 w-full", collapsed && "flex flex-col items-center")}>
+            {!collapsed && (
+              <div className="px-3 py-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                Pinned
+              </div>
+            )}
             {pinnedThreads.map((t) => (
               <ThreadRow
                 key={t.id}
@@ -176,14 +208,15 @@ export function WorkspaceSidebar({ userEmail }: { userEmail?: string }) {
                 onArchive={handleArchive}
                 menuOpen={menuOpen}
                 setMenuOpen={setMenuOpen}
+                collapsed={collapsed}
               />
             ))}
           </div>
         )}
 
         {unpinnedThreads.length > 0 && (
-          <div>
-            {pinnedThreads.length > 0 && (
+          <div className="w-full">
+            {!collapsed && pinnedThreads.length > 0 && (
               <div className="px-3 py-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
                 Recent
               </div>
@@ -198,6 +231,7 @@ export function WorkspaceSidebar({ userEmail }: { userEmail?: string }) {
                 onArchive={handleArchive}
                 menuOpen={menuOpen}
                 setMenuOpen={setMenuOpen}
+                collapsed={collapsed}
               />
             ))}
           </div>
@@ -205,27 +239,32 @@ export function WorkspaceSidebar({ userEmail }: { userEmail?: string }) {
       </nav>
 
       {/* Navigation links */}
-      <div className="border-t border-border/60 p-3">
-        <div className="flex flex-col gap-0.5">
-          <SidebarNavLink href="/dashboard" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" pathname={pathname} />
-          <SidebarNavLink href="/chat" icon={<MessageSquare className="h-4 w-4" />} label="Chat" pathname={pathname} />
-          <SidebarNavLink href="/settings" icon={<Settings className="h-4 w-4" />} label="Settings" pathname={pathname} />
-          <SidebarNavLink href="/settings/providers" icon={<KeyRound className="h-4 w-4" />} label="Providers" pathname={pathname} />
+      <div className={cn("border-t border-border/60 p-3", collapsed && "px-0 flex flex-col items-center")}>
+        <div className={cn("flex flex-col gap-0.5 w-full", collapsed && "items-center")}>
+          <SidebarNavLink href="/dashboard" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" pathname={pathname} collapsed={collapsed} />
+          <SidebarNavLink href="/chat" icon={<MessageSquare className="h-4 w-4" />} label="Chat" pathname={pathname} collapsed={collapsed} />
+          <SidebarNavLink href="/settings" icon={<Settings className="h-4 w-4" />} label="Settings" pathname={pathname} collapsed={collapsed} />
+          <SidebarNavLink href="/settings/providers" icon={<KeyRound className="h-4 w-4" />} label="Providers" pathname={pathname} collapsed={collapsed} />
         </div>
       </div>
 
       {/* Account footer */}
-      <div className="border-t border-border/60 p-3">
-        <div className="flex items-center gap-3 rounded-lg px-2 py-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-medium text-muted-foreground">
+      <div className={cn("border-t border-border/60 p-3", collapsed && "px-0 flex flex-col items-center")}>
+        <div className={cn("flex items-center gap-3 rounded-lg px-2 py-2", collapsed ? "justify-center px-0 w-auto" : "w-full")}>
+          <div
+            title={collapsed ? userEmail ?? "User" : undefined}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-foreground border border-border"
+          >
             {userEmail ? userEmail.charAt(0).toUpperCase() : "U"}
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-xs font-medium text-muted-foreground">
-              {userEmail ?? "User"}
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-xs font-medium text-foreground">
+                {userEmail ?? "User"}
+              </div>
             </div>
-          </div>
-          <SignOutButton />
+          )}
+          <SignOutButton iconOnly={collapsed} className={collapsed ? "h-8 w-8" : undefined} />
         </div>
       </div>
     </aside>
@@ -240,6 +279,7 @@ function ThreadRow({
   onArchive,
   menuOpen,
   setMenuOpen,
+  collapsed = false,
 }: {
   thread: Thread;
   isActive: boolean;
@@ -248,8 +288,32 @@ function ThreadRow({
   onArchive: (id: string) => void;
   menuOpen: string | null;
   setMenuOpen: (id: string | null) => void;
+  collapsed?: boolean;
 }) {
   const isOwnMenuOpen = menuOpen === thread.id;
+
+  if (collapsed) {
+    return (
+      <div className="relative group flex justify-center py-1">
+        <Link
+          href={`/chat?thread=${thread.id}`}
+          title={thread.title}
+          className={cn(
+            "flex h-9 w-9 items-center justify-center rounded-lg transition-colors",
+            isActive
+              ? "bg-secondary text-foreground"
+              : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+          )}
+        >
+          {thread.is_pinned ? (
+            <Pin className="h-4 w-4" />
+          ) : (
+            <MessageSquare className="h-4 w-4" />
+          )}
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="relative group">
@@ -315,11 +379,13 @@ function SidebarNavLink({
   icon,
   label,
   pathname,
+  collapsed = false,
 }: {
   href: string;
   icon: React.ReactNode;
   label: string;
   pathname: string;
+  collapsed?: boolean;
 }) {
   const isActive = pathname.startsWith(href) && href !== "/dashboard"
     ? true
@@ -328,14 +394,19 @@ function SidebarNavLink({
   return (
     <Link
       href={href}
-      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+      title={collapsed ? label : undefined}
+      className={cn(
+        "flex items-center gap-2.5 rounded-lg transition-colors",
+        collapsed
+          ? "h-9 w-9 justify-center"
+          : "px-3 py-2 text-sm font-medium",
         isActive
           ? "bg-secondary text-foreground"
           : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-      }`}
+      )}
     >
       {icon}
-      {label}
+      {!collapsed && label}
     </Link>
   );
 }

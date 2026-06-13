@@ -40,11 +40,26 @@ export default async function ProtectedLayout({
 
   const userLabel = data.user.email ?? data.user.user_metadata?.display_name ?? undefined;
 
+  let initialSidebarCollapsed = false;
+  try {
+    const { data: prefs } = await supabase
+      .from("user_preferences")
+      .select("sidebar_collapsed")
+      .eq("user_id", data.user.id)
+      .maybeSingle();
+    if (prefs) {
+      initialSidebarCollapsed = !!prefs.sidebar_collapsed;
+    }
+  } catch {
+    // Fail silent
+  }
+
   return (
     <AppShell
       title="Dirtchat"
       userLabel={userLabel}
       userEmail={data.user.email}
+      initialSidebarCollapsed={initialSidebarCollapsed}
     >
       {children}
     </AppShell>
