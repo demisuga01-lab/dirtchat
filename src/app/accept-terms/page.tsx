@@ -51,11 +51,6 @@ export default async function AcceptTermsPage() {
 
   return (
     <div className="relative mx-auto flex min-h-[100dvh] max-w-3xl flex-col px-4 py-12">
-      {/* Subtle clean background glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,hsl(var(--success)/0.03),transparent_70%)]"
-      />
 
       <div className="mb-4 flex items-center justify-between">
         <DirtchatLogo size="sm" showWordmark />

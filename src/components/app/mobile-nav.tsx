@@ -40,7 +40,7 @@ export function MobileNav({
         className="absolute inset-0 bg-background/80 backdrop-blur"
         onClick={onClose}
       />
-      <nav className="absolute inset-y-0 left-0 flex w-64 flex-col gap-1 border-r border-border/60 bg-background p-3">
+      <nav className="absolute inset-y-0 left-0 flex w-64 flex-col gap-1 border-r border-border bg-background p-3">
         <div className="mb-2 flex h-10 items-center gap-2 px-2">
           <DirtchatLogo size="sm" showWordmark />
         </div>

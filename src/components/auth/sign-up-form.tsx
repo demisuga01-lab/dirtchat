@@ -35,16 +35,15 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
   const emailValid = email.includes("@");
   const passwordLengthValid = password.length >= 8;
   const passwordsMatch = password === confirmPassword;
-  const passwordMismatch = password && confirmPassword && !passwordsMatch;
 
   const canSubmit = acceptedTerms && acceptedPrivacy && passwordsMatch && passwordLengthValid && emailValid;
 
   const disabledReason = React.useMemo(() => {
     if (!isConfigured) {
       if (configState.status === "missing") {
-        return `Missing environment variables: ${(configState as { missing: string[] }).missing.join(", ")}`;
+        return "Supabase env is missing.";
       }
-      return "Replace demo Supabase keys in .env.local, then restart the dev server.";
+      return "Replace demo Supabase keys in .env.local.";
     }
     if (loading) return "Creating account…";
     if (!email || !emailValid) return "Enter a valid email.";
@@ -123,17 +122,19 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4.5" noValidate>
+    <form onSubmit={onSubmit} className="flex flex-col gap-5" noValidate>
       {!isConfigured ? (
-        <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+        <div className="rounded-none border border-border bg-muted/40 p-4 text-[11px] font-mono leading-relaxed text-muted-foreground">
           {configState.status === "missing"
-            ? `The following environment variables are not set: ${(configState as { missing: string[] }).missing.join(", ")}. Add them to .env.local and restart the dev server.`
+            ? `Missing environment variables: ${(configState as { missing: string[] }).missing.join(", ")}. Add them to .env.local and restart the dev server.`
             : `Demo placeholder keys detected in: ${(configState as { demo: string[] }).demo.join(", ")}. Replace them with real values in .env.local and restart the dev server.`}
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="display-name">Display name</Label>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="display-name" className="text-xs uppercase tracking-wider font-bold text-muted-foreground">
+          Display name
+        </Label>
         <Input
           id="display-name"
           name="displayName"
@@ -143,11 +144,14 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder="Display Name"
           disabled={!isConfigured || loading}
+          className="rounded-none border-border bg-background focus-visible:ring-accent focus-visible:ring-offset-0 h-11"
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="email">Email</Label>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="email" className="text-xs uppercase tracking-wider font-bold text-muted-foreground">
+          Email
+        </Label>
         <Input
           id="email"
           name="email"
@@ -158,11 +162,14 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
           disabled={!isConfigured || loading}
+          className="rounded-none border-border bg-background focus-visible:ring-accent focus-visible:ring-offset-0 h-11"
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="password">Password</Label>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="password" className="text-xs uppercase tracking-wider font-bold text-muted-foreground">
+          Password
+        </Label>
         <Input
           id="password"
           name="password"
@@ -173,11 +180,14 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="At least 8 characters"
           disabled={!isConfigured || loading}
+          className="rounded-none border-border bg-background focus-visible:ring-accent focus-visible:ring-offset-0 h-11"
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="confirm-password">Confirm password</Label>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="confirm-password" className="text-xs uppercase tracking-wider font-bold text-muted-foreground">
+          Confirm password
+        </Label>
         <Input
           id="confirm-password"
           name="confirmPassword"
@@ -188,48 +198,46 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="Re-enter your password"
           disabled={!isConfigured || loading}
+          className="rounded-none border-border bg-background focus-visible:ring-accent focus-visible:ring-offset-0 h-11"
         />
-        {passwordMismatch ? (
-          <p className="text-xs text-destructive">Passwords do not match.</p>
-        ) : null}
       </div>
 
-      {/* Legal acceptance checkboxes — always rendered */}
-      <div className="flex flex-col gap-3">
-        <label className="flex items-start gap-3 rounded-md border border-border p-3 cursor-pointer hover:bg-muted/20 transition-colors">
+      {/* Legal acceptance checkboxes */}
+      <div className="flex flex-col gap-2">
+        <label className="flex items-start gap-3 border border-border p-3 cursor-pointer bg-background hover:bg-muted/10 transition-colors rounded-none">
           <input
             type="checkbox"
             checked={acceptedTerms}
             onChange={(e) => setAcceptedTerms(e.target.checked)}
             disabled={loading}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-success focus:ring-success accent-success"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded-none border-border text-accent focus:ring-accent accent-accent"
           />
-          <span className="text-xs text-muted-foreground leading-relaxed">
-            I have read and agree to the{" "}
+          <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground leading-relaxed">
+            I agree to the{" "}
             <Link
               href="/terms"
               target="_blank"
-              className="font-medium text-foreground underline underline-offset-4 hover:text-success"
+              className="font-bold text-foreground underline underline-offset-4 hover:text-accent"
             >
               Terms of Service
             </Link>
           </span>
         </label>
 
-        <label className="flex items-start gap-3 rounded-md border border-border p-3 cursor-pointer hover:bg-muted/20 transition-colors">
+        <label className="flex items-start gap-3 border border-border p-3 cursor-pointer bg-background hover:bg-muted/10 transition-colors rounded-none">
           <input
             type="checkbox"
             checked={acceptedPrivacy}
             onChange={(e) => setAcceptedPrivacy(e.target.checked)}
             disabled={loading}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-success focus:ring-success accent-success"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded-none border-border text-accent focus:ring-accent accent-accent"
           />
-          <span className="text-xs text-muted-foreground leading-relaxed">
-            I have read and agree to the{" "}
+          <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground leading-relaxed">
+            I agree to the{" "}
             <Link
               href="/privacy"
               target="_blank"
-              className="font-medium text-foreground underline underline-offset-4 hover:text-success"
+              className="font-bold text-foreground underline underline-offset-4 hover:text-accent"
             >
               Privacy Policy
             </Link>
@@ -238,28 +246,24 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
       </div>
 
       {error ? (
-        <p
-          role="alert"
-          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive animate-fade-in"
-        >
+        <p role="alert" className="rounded-none border border-destructive bg-destructive/5 p-4 text-[11px] font-mono tracking-wide text-destructive">
           {error}
         </p>
       ) : null}
 
       {info ? (
-        <p
-          role="status"
-          className="rounded-md border border-border bg-muted/40 p-3 text-sm text-foreground animate-fade-in"
-        >
+        <p role="status" className="rounded-none border border-border bg-muted/40 p-4 text-[11px] font-mono tracking-wide text-foreground">
           {info}
         </p>
       ) : null}
 
-      {/* Account creation requirements checklist */}
+      {/* Registration Checklist */}
       {isConfigured && !canSubmit && (
-        <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs">
-          <span className="font-semibold text-muted-foreground block mb-2">Registration checklist:</span>
-          <ul className="space-y-1.5 font-medium">
+        <div className="border border-border p-4 bg-muted/5 rounded-none flex flex-col gap-3">
+          <div className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase">
+            [ REGISTRATION CHECKLIST ]
+          </div>
+          <ul className="grid grid-cols-1 gap-2 text-[11px] font-mono">
             <ChecklistRequirement checked={emailValid} label="Valid email address" />
             <ChecklistRequirement checked={passwordLengthValid} label="Password (8+ characters)" />
             <ChecklistRequirement checked={passwordsMatch && !!password} label="Passwords match" />
@@ -269,26 +273,30 @@ export function SignUpForm({ legalDocs }: { legalDocs: LegalDocOption[] }) {
         </div>
       )}
 
-      {/* Disabled reason prompt */}
+      {/* Disabled Reason Prompt */}
       {!canSubmit && disabledReason && (
-        <div className="rounded border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-center text-xs text-amber-500 animate-fade-in font-medium">
-          {disabledReason}
+        <div className="border border-border bg-muted/10 px-4 py-3 text-center text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+          Status: {disabledReason}
         </div>
       )}
 
       <Button
         type="submit"
         disabled={!isConfigured || loading || !canSubmit}
-        className="w-full"
+        className={`w-full rounded-none text-xs font-bold uppercase tracking-widest h-11 transition-all ${
+          canSubmit
+            ? "bg-primary text-primary-foreground hover:bg-primary/90"
+            : "bg-muted text-muted-foreground cursor-not-allowed border border-border"
+        }`}
       >
         {loading ? "Creating account…" : "Create account"}
       </Button>
 
-      <p className="text-center text-sm text-muted-foreground mt-2">
+      <p className="text-center text-xs text-muted-foreground mt-2 font-mono">
         Already have an account?{" "}
         <Link
           href="/sign-in"
-          className="font-medium text-foreground underline-offset-4 hover:underline hover:text-success transition-colors"
+          className="font-bold text-foreground underline underline-offset-4 hover:text-success transition-colors"
         >
           Sign in
         </Link>
@@ -301,11 +309,11 @@ function ChecklistRequirement({ checked, label }: { checked: boolean; label: str
   return (
     <li className="flex items-center gap-2">
       <span
-        className={`h-2 w-2 rounded-full transition-colors ${
-          checked ? "bg-success" : "bg-muted-foreground/30"
+        className={`h-1.5 w-1.5 bg-current transition-colors ${
+          checked ? "text-accent" : "text-muted-foreground/30"
         }`}
       />
-      <span className={checked ? "text-foreground" : "text-muted-foreground/70"}>
+      <span className={checked ? "text-foreground" : "text-muted-foreground/50"}>
         {label}
       </span>
     </li>

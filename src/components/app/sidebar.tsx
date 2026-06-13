@@ -114,9 +114,9 @@ export function WorkspaceSidebar({ userEmail }: { userEmail?: string }) {
   }, [menuOpen]);
 
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col md:border-r md:border-border/60 md:bg-background/40">
+    <aside className="hidden md:flex md:w-64 md:flex-col md:border-r md:border-border bg-background">
       {/* Brand header */}
-      <div className="flex h-14 items-center justify-between border-b border-border/60 px-4">
+      <div className="flex h-16 items-center justify-between border-b border-border px-4">
         <Link href="/dashboard" className="flex items-center">
           <DirtchatLogo size="sm" showWordmark />
         </Link>

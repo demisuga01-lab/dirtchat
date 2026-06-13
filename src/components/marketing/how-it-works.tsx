@@ -1,47 +1,85 @@
-import { PlugZap, Search, MessageSquare } from "lucide-react";
-
-const steps = [
-  {
-    icon: <PlugZap className="h-5 w-5" />,
-    title: "Connect a provider",
-    description:
-      "Add your API key for any supported provider or OpenAI-compatible endpoint. Keys are encrypted and never exposed.",
-  },
-  {
-    icon: <Search className="h-5 w-5" />,
-    title: "Discover available models",
-    description:
-      "Your provider connections are automatically scanned. Browse model names, capability tags, and default settings — all in one place.",
-  },
-  {
-    icon: <MessageSquare className="h-5 w-5" />,
-    title: "Chat in one workspace",
-    description:
-      "Pick a model and start a conversation. Switch providers mid-task, compare responses, and keep your entire history organized in threads.",
-  },
-];
-
 export function HowItWorks() {
+  const steps = [
+    {
+      num: "01",
+      tag: "CONNECT PROVIDERS",
+      title: "Add your API keys",
+      description:
+        "Input keys for OpenAI, Anthropic, Gemini, Groq, or local endpoints. Your credentials are encrypted and stored in your browser or database—no middleman, no logging.",
+    },
+    {
+      num: "02",
+      tag: "PICK A MODEL",
+      title: "Select from the catalog",
+      description:
+        "Access the latest LLMs from a unified dropdown. Compare capabilities, view token rates, and select standard configurations.",
+    },
+    {
+      num: "03",
+      tag: "START A THREAD",
+      title: "Begin a clean conversation",
+      description:
+        "Initiate focused conversations in a distraction-free environment. Stream responses in real-time, format markdown, and manage outputs.",
+    },
+    {
+      num: "04",
+      tag: "SWITCH OR COMPARE",
+      title: "Change models mid-chat",
+      description:
+        "Route the next message in your active thread to a different provider. Compare outputs side-by-side without losing conversation context.",
+    },
+    {
+      num: "05",
+      tag: "KEEP THE HISTORY",
+      title: "Save threads locally",
+      description:
+        "All conversations are stored locally in your history. Search past code, retrieve previous discussions, and maintain absolute data ownership.",
+    },
+  ];
+
   return (
-    <section className="border-t border-border/60 bg-muted/30 px-6 py-20">
-      <div className="mx-auto max-w-5xl">
-        <h2 className="text-center text-3xl font-semibold tracking-tight sm:text-4xl">
-          How it works
-        </h2>
-        <p className="mx-auto mt-3 max-w-lg text-balance text-center text-muted-foreground">
-          From provider setup to streaming chat in a few steps.
-        </p>
-        <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-          {steps.map((step, i) => (
-            <div key={step.title} className="flex flex-col items-center text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-foreground">
-                {step.icon}
+    <section className="border-b border-border bg-background">
+      <div className="mx-auto max-w-[1600px]">
+        {/* Header Block */}
+        <div className="border-b border-border px-6 py-12 lg:px-10 2xl:px-14">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div className="mb-2 text-[10px] font-mono tracking-widest text-accent uppercase">
+                [ WORKFLOW / METHODOLOGY ]
               </div>
-              <div className="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-muted-foreground animate-connecting-pulse" style={{ animationDelay: `${i * 800}ms` }}>
-                {i + 1}
+              <h2 className="text-2xl font-bold uppercase tracking-tight sm:text-3xl">
+                The Real Workflow
+              </h2>
+            </div>
+            <p className="max-w-md text-xs uppercase tracking-wider text-muted-foreground leading-relaxed">
+              No wrappers, no visual markup. Direct integration from key connection to persistent threads.
+            </p>
+          </div>
+        </div>
+
+        {/* Steps Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-border">
+          {steps.map((step) => (
+            <div
+              key={step.num}
+              className="flex flex-col justify-between p-6 lg:p-8 hover:bg-muted/10 transition-colors duration-200"
+            >
+              <div>
+                {/* Step Num & Tag */}
+                <div className="flex items-center justify-between mb-8">
+                  <span className="text-3xl font-bold tracking-tighter text-foreground font-mono">
+                    {step.num}
+                  </span>
+                  <span className="text-[9px] font-mono tracking-widest text-accent uppercase">
+                    [ {step.tag} ]
+                  </span>
+                </div>
+
+                <h3 className="text-sm font-bold uppercase tracking-tight text-foreground mb-3">
+                  {step.title}
+                </h3>
               </div>
-              <h3 className="mt-3 text-base font-semibold">{step.title}</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground leading-relaxed mt-4">
                 {step.description}
               </p>
             </div>
