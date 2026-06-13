@@ -136,6 +136,11 @@ export async function signOut(): Promise<void> {
 
 export async function updateProfileDisplayName(userId: string, displayName: string): Promise<AuthResult> {
   const supabase = await createClient();
+  const { data: userData, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !userData?.user || userData.user.id !== userId) {
+    return { ok: false, error: "Unauthorized" };
+  }
 
   const { error } = await supabase
     .from("profiles")

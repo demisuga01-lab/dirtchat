@@ -173,6 +173,7 @@ export async function listProviders(): Promise<ProviderWithSecretMeta[]> {
       .select(
         "provider_connection_id, key_last4, key_hash, encryption_version, updated_at"
       )
+      .eq("user_id", userId)
       .in("provider_connection_id", ids);
     if (secretsError) {
       // Non-fatal: we still want to show the connection list.
@@ -224,6 +225,7 @@ export async function getProvider(
       "provider_connection_id, key_last4, key_hash, encryption_version, updated_at"
     )
     .eq("provider_connection_id", id)
+    .eq("user_id", userId)
     .maybeSingle();
   if (secretErr) {
     // non-fatal

@@ -18,6 +18,16 @@ const createSchema = z.object({
 });
 
 export async function GET() {
+  const supabase = await createClient();
+  const { data: userData, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !userData?.user) {
+    return NextResponse.json(
+      { ok: false, error: "You must be signed in." },
+      { status: 401 }
+    );
+  }
+
   try {
     const threads = await listThreads();
     return NextResponse.json({ ok: true, threads }, { status: 200 });

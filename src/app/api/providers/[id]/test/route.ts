@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { testConnection } from "@/lib/providers/provider-service";
 import { z } from "zod";
 
@@ -27,6 +28,16 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const supabase = await createClient();
+  const { data: userData, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !userData?.user) {
+    return NextResponse.json(
+      { ok: false, error: "You must be signed in." },
+      { status: 401 }
+    );
+  }
+
   const { id } = await params;
   if (!id) {
     return NextResponse.json(

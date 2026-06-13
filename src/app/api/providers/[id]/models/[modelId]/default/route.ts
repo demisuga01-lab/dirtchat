@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { setProviderDefaultModel } from "@/lib/models/model-discovery-service";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,16 @@ export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string; modelId: string }> }
 ) {
+  const supabase = await createClient();
+  const { data: userData, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !userData?.user) {
+    return NextResponse.json(
+      { ok: false, error: "You must be signed in." },
+      { status: 401 }
+    );
+  }
+
   const { id, modelId } = await params;
   if (!id || !modelId) {
     return NextResponse.json(
