@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { RoutingMapBackground } from "./routing-map-background";
 
 export function LandingHero() {
   return (
     <section className="relative w-full border-b border-border bg-background pt-20 pb-16 md:pt-28 md:pb-24">
-      <div className="mx-auto max-w-[1600px] px-6 lg:px-10 2xl:px-14">
+      <RoutingMapBackground />
+      <div className="relative z-10 mx-auto max-w-[1600px] px-6 lg:px-10 2xl:px-14">
         {/* Editorial Grid Layout */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-7 flex flex-col justify-center">
